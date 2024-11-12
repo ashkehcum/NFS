@@ -23,25 +23,40 @@ void *work_handler(){
         exit(1);
     }
     // listen for incoming connections
-    if(listen(server_socket, MAX_CLIENTS) == -1){
+    if(listen(server_socket, MAX_CONNECTIONS) == -1){
         perror("Listening on port failed");
         exit(1);
     }
     // accept incoming connections
     struct sockaddr_in client_addr;
     socklen_t client_addr_len = sizeof(client_addr);
+    // initialize the socket array
+    for(int i = 0; i < MAX_CONNECTIONS; i++){
+        socket_arr[i][0] = -1;
+        socket_arr[i][1] = -1;
+    }
     while(1){
         // handle multiple clients
-        for(int i = 0; i < MAX_CLIENTS; i++){
-            if(client_socket_arr[i] == -1){
-                client_socket_arr[i] = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len);
-                if(client_socket_arr[i] == -1){
+        for(int i = 0; i < MAX_CONNECTIONS; i++){
+            if(socket_arr[i][0] == -1){
+                socket_arr[i][0] = accept(server_socket, (struct sockaddr *)&client_addr, &client_addr_len);
+                if(socket_arr[i][0] == -1){
                     perror("Accepting connection failed");
                     exit(1);
                 }
-                // create a new thread to handle the client request
-                pthread_t client_thread;
-                pthread_create(&client_thread, NULL, &client_handler, (void *)&client_socket_arr[i]);
+                // recieve a message from the client or storage server to determine the type of connection
+                char buffer[1024] = {0};
+                read(socket_arr[i][0], buffer, 1024);
+                if(strcmp(buffer, "client") == 0){
+                    // create a new thread to handle the client request
+                    pthread_t client_thread;
+                    pthread_create(&client_thread, NULL, &client_handler, (void *)i);
+                }
+                else if(strcmp(buffer, "storage_server") == 0){
+                    // create a new thread to handle the storage server request
+                    pthread_t storage_server_thread;
+                    pthread_create(&storage_server_thread, NULL, &storage_server_handler, (void *)i);
+                }
             }
         }
     }

@@ -29,9 +29,14 @@
 
 #define MAX_CLIENTS 100
 #define NS_PORT 3000
+#define MAX_CONNECTIONS 120
 #define NS_IP "0.0.0.0"
 #define MAX_PATH_LEN  1024  
 #define MAX_FILES 25
+
+extern int socket_arr[MAX_CONNECTIONS][2];
+
+void *work_handler();
 
 typedef struct storage_server{
     char IP_Addr[15];
@@ -45,6 +50,8 @@ typedef struct client{
     char IP_Addr;
     int Port_No;
 } client;
+
+extern client client_list[MAX_CLIENTS];
 
 typedef struct req{
 
