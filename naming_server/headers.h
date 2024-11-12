@@ -19,18 +19,35 @@
 #include <dirent.h>
 #include <sys/wait.h>
 
-#define RED_COLOR    "\033[0;31m"
 #define GREEN_COLOR  "\033[0;32m"
-#define BLUE_COLOR   "\033[0;34m"
-#define YELLOW_COLOR "\033[0;33m"
 #define CYAN_COLOR   "\033[0;36m"
 #define ORANGE_COLOR "\e[38;2;255;85;0m"
 #define RESET_COLOR  "\033[0m"
+#define BLUE_COLOR   "\033[0;34m"
+#define RED_COLOR    "\033[0;31m"
+#define YELLOW_COLOR "\033[0;33m"
 
 #define MAX_CLIENTS 100
 #define NS_PORT 3000
 #define NS_IP "0.0.0.0"
 #define MAX_PATH_LEN  1024  
 #define MAX_FILES 25
+
+typedef struct storage_server{
+    char IP_Addr[15];
+    int Port_No;
+    int Client_Port;
+    // Rem
+
+} storage_server;
+
+typedef struct client{
+    char IP_Addr;
+    int Port_No;
+} client;
+
+typedef struct req{
+
+} req;
 
 #endif
