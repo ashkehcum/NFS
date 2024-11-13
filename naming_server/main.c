@@ -7,7 +7,7 @@ int main(){
     printf("Naming Server Started\n");
 
     pthread_t working_thread;
-
+    storage_server_count = 0;
     pthread_create(&working_thread, NULL, &work_handler, NULL);
     
 

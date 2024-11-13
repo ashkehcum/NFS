@@ -1,7 +1,6 @@
 #include"headers.h"
 
 ss storage_server_list[100];
-int storage_server_count = 0;
 
 void handle_client_process(void *arg) {
     // handle the client request
