@@ -74,22 +74,25 @@ typedef struct st_response
     int response_type;
     char message[MAX_REQUEST_LEN];
 } st_response;
-
 typedef st_response* response;
 
 
 typedef struct storage_server{
+    int storage_server_id;
     char IP_Addr[15];
-    int Port_No;
-    int Client_Port;
-    // Rem
+    int Port_No; // connected to the naming server
+    int Client_Port; // connected to the client
+    
+    struct storage_server *b1;
+    struct storage_server *b2;
 
 } storage_server_info;
 
 typedef storage_server_info* ss;
 
 typedef struct client{
-    char IP_Addr;
+    int client_id;
+    char IP_Addr[15];
     int Port_No;
 } client;
 
