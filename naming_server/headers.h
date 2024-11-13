@@ -18,6 +18,7 @@
 #include <fcntl.h>
 #include <dirent.h>
 #include <sys/wait.h>
+#include <stdbool.h>
 
 #define GREEN_COLOR  "\033[0;32m"
 #define CYAN_COLOR   "\033[0;36m"
@@ -93,9 +94,13 @@ typedef struct client{
 } client;
 
 extern client client_list[MAX_CLIENTS];
+extern ss storage_server_list[100];
+extern int storage_server_count = 0;
 
 typedef struct req{
 
 } req;
+
+void handle_file_request(request req, int client_id);
 
 #endif
