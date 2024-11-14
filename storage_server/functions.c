@@ -54,6 +54,7 @@ int register_with_naming_server(storage_server *ss, char *accessible_paths) {
     // strncpy(ss_info.paths, accessible_paths, sizeof(ss_info.paths) - 1);
     // ss_info.paths[sizeof(ss_info.paths) - 1] = '\0'; // Ensure null termination
     strcpy(ss_info.paths, accessible_paths);
+    printf("ss_info.paths: %s\n", ss_info.paths);
 
     // Send storage_server_info to Naming Server
     if (send(ns_sock, &ss_info, sizeof(ss_info), 0) < 0) {
