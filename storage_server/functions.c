@@ -1,10 +1,15 @@
 #include "functions.h"
 
-int register_with_naming_server(storage_server *ss, char (*accessible_paths)[MAX_PATH_LEN]) {
+int register_with_naming_server(storage_server *ss, char *accessible_paths) {
+    printf("ss->IP_Addr: %s\n", ss->IP_Addr);
+    printf("ss->Port_No: %d\n", ss->Port_No);   
+    printf("ss->nm_ip: %s\n", ss->nm_ip);
+    printf("ss->NM_Port: %d\n", ss->NM_Port);
+    printf("accessible_paths: %s\n", accessible_paths);
     int ns_sock;
     struct sockaddr_in ns_addr;
 
-    // Set up connection to the Naming Server
+    // Set up socket to connect to Naming Server
     ns_sock = socket(AF_INET, SOCK_STREAM, 0);
     if (ns_sock < 0) {
         perror("NS socket creation failed");
@@ -12,8 +17,12 @@ int register_with_naming_server(storage_server *ss, char (*accessible_paths)[MAX
     }
 
     ns_addr.sin_family = AF_INET;
-    ns_addr.sin_port = htons(NS_PORT);
-    inet_pton(AF_INET, NS_IP, &ns_addr.sin_addr);
+    ns_addr.sin_port = htons(ss->NM_Port);
+    if (inet_pton(AF_INET, ss->nm_ip, &ns_addr.sin_addr) < 0) {
+        perror("Invalid Naming Server IP address");
+        close(ns_sock);
+        return -1;
+    }
 
     // Connect to Naming Server
     if (connect(ns_sock, (struct sockaddr *)&ns_addr, sizeof(ns_addr)) < 0) {
@@ -22,23 +31,40 @@ int register_with_naming_server(storage_server *ss, char (*accessible_paths)[MAX
         return -1;
     }
 
-    // Send Storage Server details to Naming Server
-    if (send(ns_sock, ss, sizeof(*ss), 0) < 0) {
+    char str[]="storage_server";
+    // Send a message to the Naming Server to confirm the connection
+    if (send(ns_sock, &str, sizeof(str), 0) < 0) {
+        perror("Failed to send message to NS");
+        close(ns_sock);
+        return -1;
+    }
+    // receive message from the naming server
+    char buffer[1024] = {0};
+    // read(ns_sock, buffer, 1024);
+    recv(ns_sock, buffer, 1024, 0);
+    printf("%s\n", buffer);
+
+
+    // Populate storage_server_info structure
+    storage_server_info ss_info;
+    // strncpy(ss_info.IP_Addr, ss->IP_Addr, sizeof(ss_info.IP_Addr) - 1);
+    // ss_info.IP_Addr[sizeof(ss_info.IP_Addr) - 1] = '\0'; // Ensure null termination
+    strcpy(ss_info.IP_Addr, ss->IP_Addr);
+    ss_info.Port_No = ss->Port_No;
+    // strncpy(ss_info.paths, accessible_paths, sizeof(ss_info.paths) - 1);
+    // ss_info.paths[sizeof(ss_info.paths) - 1] = '\0'; // Ensure null termination
+    strcpy(ss_info.paths, accessible_paths);
+
+    // Send storage_server_info to Naming Server
+    if (send(ns_sock, &ss_info, sizeof(ss_info), 0) < 0) {
         perror("Failed to send Storage Server details to NS");
         close(ns_sock);
         return -1;
     }
 
-    // Send accessible paths to Naming Server
-    for (int i = 0; i < MAX_PATHS && accessible_paths[i][0] != '\0'; i++) {
-        if (send(ns_sock, accessible_paths[i], strlen(accessible_paths[i]), 0) < 0) {
-            perror("Failed to send accessible path to NS");
-            close(ns_sock);
-            return -1;
-        }
-    }
-
     printf(GREEN_COLOR "Storage Server registered with Naming Server at %s:%d\n" RESET_COLOR, NS_IP, NS_PORT);
+
+    // Close the socket after sending
     close(ns_sock);
     return 0;
 }
@@ -86,45 +112,99 @@ void *naming_server_listener(void *arg) {
     pthread_exit(NULL);
 }
 
+#define BUFFER_SIZE 1024
 void *client_listener(void *arg) {
-    storage_server *ss = (storage_server *)arg;
-    int client_sock;
-    struct sockaddr_in client_addr;
-    socklen_t addr_len = sizeof(client_addr);
+    int server_sock, client_sock;
+    struct sockaddr_in server_addr;
+    char buffer[BUFFER_SIZE];
+    int port = *((int *)arg);  // Retrieve the port from the argument
 
-    // Set up a listening socket for clients
-    client_sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (client_sock < 0) {
-        perror("Client socket creation failed");
+    // Create socket for listening to clients
+    server_sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (server_sock < 0) {
+        perror("Failed to create client listener socket");
+        pthread_exit(NULL);
+    }
+    int opt = 1;
+    if (setsockopt(server_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+        perror("setsockopt");
+        close(server_sock);
+        exit(EXIT_FAILURE);
+    }
+
+    // Set up server address structure
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_addr.s_addr = INADDR_ANY;
+    server_addr.sin_port = htons(port);
+
+    // Bind the socket to the specified port
+    if (bind(server_sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Client listener socket bind failed");
+        close(server_sock);
         pthread_exit(NULL);
     }
 
-    client_addr.sin_family = AF_INET;
-    client_addr.sin_port = htons(ss->Client_Port);
-    client_addr.sin_addr.s_addr = INADDR_ANY;
+    // Listen for incoming connections
+    // if (listen(server_sock, MAX_CLIENTS) < 0) {
+    //     perror("Failed to listen on client listener socket");
+    //     close(server_sock);
+    //     pthread_exit(NULL);
+    // }
 
-    if (bind(client_sock, (struct sockaddr *)&client_addr, sizeof(client_addr)) < 0) {
-        perror("Binding client socket failed");
-        close(client_sock);
-        pthread_exit(NULL);
-    }
+    printf("Listening for client connections on port %d...\n", port);
 
-    listen(client_sock, 5);
-    printf(YELLOW_COLOR "Listening for client requests on port %d\n" RESET_COLOR, ss->Client_Port);
-
-    while (1) {
-        int new_sock = accept(client_sock, NULL, NULL);
-        if (new_sock < 0) {
-            perror("Failed to accept connection from client");
+    while (listen(server_sock, MAX_CLIENTS) >= 0) {
+        // Accept an incoming client connection
+        client_sock = accept(server_sock, NULL, NULL);
+        if (client_sock < 0) {
+            perror("Failed to accept client connection");
             continue;
         }
 
-        // Handle client request (e.g., read/write files)
-        // Placeholder for client request handling code
+        printf("Client connected.\n");
 
-        close(new_sock);
+        // Handle client requests in a loop
+        // while (1) {
+        //     // Clear the buffer
+        //     memset(buffer, 0, BUFFER_SIZE);
+
+        //     // Receive data from the client
+        //     ssize_t bytes_received = recv(client_sock, buffer, sizeof(buffer) - 1, 0);
+        //     if (bytes_received < 0) {
+        //         perror("Failed to receive data from client");
+        //         break;  // Exit the loop if there's an error
+        //     } else if (bytes_received == 0) {
+        //         printf("Client disconnected.\n");
+        //         break;  // Exit the loop if the client disconnects
+        //     }
+
+        //     buffer[bytes_received] = '\0';  // Null-terminate the received data
+        //     printf("Received from client: %s\n", buffer);
+
+        //     // Process the client's request (add your logic here)
+        //     // For now, we just echo back the message
+        //     const char *response = "Request received and processed";
+        //     if (send(client_sock, response, strlen(response), 0) < 0) {
+        //         perror("Failed to send response to client");
+        //         break;
+        //     }
+        // }
+
+        // receive a st_request from the client
+        st_request req;
+        recv(client_sock, &req, sizeof(req), 0);
+        printf("Received request from client: %s\n", req.data);
+
+        // send(client_sock, "Hello client server from storage server", strlen("Hello client server from storage server"), 0);
+        // st_request req2;
+        // strcpy(req2.data, "Hello from storage server");
+        // send(client_sock, &req2, sizeof(req2), 0);
+
+        // Close client socket after the interaction is done
+        close(client_sock);
     }
 
-    close(client_sock);
+    // Close server socket when done (will not be reached in this example)
+    close(server_sock);
     pthread_exit(NULL);
 }
