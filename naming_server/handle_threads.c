@@ -1,8 +1,12 @@
 #include"headers.h"
 
 ss storage_server_list[100];
+extern node* hashtable;
+int* primes;
+int socket_arr[MAX_CONNECTIONS][2];
+int storage_server_count = 0;
 
-void handle_client_process(void *arg) {
+void* handle_client_process(void *arg) {
     // handle the client request
     proc n = (proc)arg;
     int client_id = n->client_id;
@@ -14,7 +18,7 @@ void handle_client_process(void *arg) {
        handle_file_request(req, client_id);
     }
 }
-void client_handler(void *arg)
+void* client_handler(void *arg)
 {
     int client_socket = *(int *)arg;
     while(1)
@@ -27,6 +31,12 @@ void client_handler(void *arg)
             exit(1);
         }
         int req_valid = 1;
+        if(req->request_type == -1)
+        {
+            free(req);
+            req->request_type = 0;
+            break;
+        }
         if(req_valid)        
         {
             pthread_t process;
@@ -39,21 +49,6 @@ void client_handler(void *arg)
     }
 }
 
-void storage_server_handler(void *arg)
-{
-    int storage_server_id = *(int *)arg;
-    while(1)
-    {
-        request req = (request)malloc(sizeof(st_request));
-        int res = recv(storage_server_id, req, sizeof(st_request), 0);
-        if(res <= 0){
-            free(req);
-            perror("Error in receiving request from storage server");
-            exit(1);
-        }
-        int req_valid = 1;
-    }
-}
 
 void *work_handler(){
     // create a socket for the naming server
@@ -108,7 +103,7 @@ void *work_handler(){
                     // send a message to the client to confirm the connection 
                     send(socket_arr[i][0], "Hello client server", strlen("Hello client server"), 0);
                     socket_arr[i][1] = CLIENT_FLAG;
-
+                    printf("Client connected\n");
                     // create a new thread to handle the client request
                     pthread_t client_thread;
                     pthread_create(&client_thread, NULL, &client_handler, (void *)&socket_arr[i][0]);
@@ -119,19 +114,41 @@ void *work_handler(){
                     send(socket_arr[i][0], "Hello storage server", strlen("Hello storage_server"), 0);
                     socket_arr[i][1] = STORAGE_FLAG;
 
-                    // recieve the storage server's IP address and port number 
-                    storage_server_info* ss_info = (storage_server_info *)malloc(sizeof(storage_server_info));
-                    recv(socket_arr[i][0], ss_info, sizeof(storage_server_info), 0);
-
-                    storage_server_list[storage_server_count] = ss_info;    
-                    storage_server_count++;
-
+                    // recieve the storage server's IP address and port number
+                    ss_info s = (ss_info)malloc(sizeof(storage_server_info));
+                    ssize_t bytes_received = recv(socket_arr[i][0], s, sizeof(storage_server_info), 0);
+                    if (bytes_received <= 0) {
+                        perror("Receiving storage server info failed");
+                        free(s);
+                        close(socket_arr[i][0]);
+                        continue;
+                    } else if (bytes_received < sizeof(storage_server_info)) {
+                        fprintf(stderr, "Incomplete data received\n");
+                        free(s);
+                        close(socket_arr[i][0]);
+                        continue;
+                    }
+                    // print the contents of s
+                    printf("Storage server IP: %s\n", s->IP_Addr);
+                    printf("Storage server Port: %d\n", s->Port_No);
+                    printf("Storage server Paths:\n");
+                    char *token = strtok(s->paths, ";");
+                    int value = create_hash(token, primes, strlen(token));
+                    Insert(token, strlen(token), value, hashtable, storage_server_count);
+                    while (token != NULL) {
+                        printf("%s\n", token);
+                        int value = create_hash(token, primes, strlen(token));
+                        Insert(token, strlen(token), value, hashtable, storage_server_count);
+                        token = strtok(NULL, ";");
+                    }
                     
-
-
-                    // create a new thread to handle the storage server request
-                    pthread_t storage_server_thread;
-                    pthread_create(&storage_server_thread, NULL, &storage_server_handler, (void *)i);
+                    storage_server_list[storage_server_count] = (ss)malloc(sizeof(storage_server));
+                    storage_server_list[storage_server_count]->storage_server_id = storage_server_count;
+                    strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
+                    storage_server_list[storage_server_count]->Port_No = s->Port_No;
+                    storage_server_list[storage_server_count]->Client_Port = -1;
+                    
+                    storage_server_count++;
                 }
             }
         }

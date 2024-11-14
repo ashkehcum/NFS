@@ -38,6 +38,8 @@
 #define MAX_PATH_LEN  1024  
 #define MAX_REQUEST_LEN 1000
 #define MAX_FILES 25
+#define MAX_PATHS 100
+#define MAX_PATH_LEN 50
 
 #define STORAGE_FLAG 1
 #define CLIENT_FLAG 2
@@ -50,9 +52,33 @@
 #define INVALID_FILETYPE 402
 #define FILE_NOT_FOUND 404
 
+extern int* primes;
 extern int socket_arr[MAX_CONNECTIONS][2];
 
 void *work_handler();
+
+typedef struct st_node{
+    char* path;   // path
+    int len;   // length of the path entered
+    int s_index;     // index of the storage server
+    struct st_node* next;
+}st_node;
+
+typedef st_node* node;
+
+typedef struct compress{
+    char* a;
+    long long int hashval;
+}compress;
+
+extern node* hashtable;
+node* Create_hastable(int itablesize);
+int isPrime(int x);
+int findnextprime(int x);
+long long int create_hash(char* x, int* primes, int n);
+void Insert(char* path, int l, int pos, node* hashtable, int s_i);
+int get(node* hashtable, char* cmp, int pos);
+void Delete(char* path, int pos, node* hashtable);
 
 typedef struct storage_server{
     int storage_server_id;
@@ -63,9 +89,15 @@ typedef struct storage_server{
     struct storage_server *b1;
     struct storage_server *b2;
 
-} storage_server_info;
+} storage_server;
+typedef storage_server* ss;
 
-typedef storage_server_info* ss;
+typedef struct storage_server_info{
+    char IP_Addr[15];
+    int Port_No;
+    char paths[MAX_PATHS*MAX_PATH_LEN];
+} storage_server_info;
+typedef storage_server_info* ss_info;
 
 typedef struct client{
     int client_id;
