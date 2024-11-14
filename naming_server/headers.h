@@ -101,7 +101,7 @@ typedef struct st_request {
     int request_type;
     char data[MAX_REQUEST_LEN];
     char path[MAX_PATH_LEN];
-    char copytopath[MAX_PATH_LEN];
+    char copy_to_path[MAX_PATH_LEN];
     char file_or_dir_name[MAX_FILE_NAME];
 } st_request;
 typedef st_request* request;

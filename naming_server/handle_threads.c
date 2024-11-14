@@ -43,8 +43,10 @@ void file_requests_to_storage_server(request req, int client_id)
         strcpy(r->file_or_dir_name, req->file_or_dir_name);
         strcpy(r->path, req->path);
         strcpy(r->data, req->data);
+        strcpy(r->copy_to_path, req->copy_to_path);
         send(socket_arr[storage_server_id][0], r, sizeof(st_request), 0);
     }
+    free(r);
 }
 void* handle_client_process(void *arg) {
     // handle the client request
@@ -61,6 +63,7 @@ void* handle_client_process(void *arg) {
     {
         file_requests_to_storage_server(req, client_id);
     }
+    free(req);
 }
 void* client_handler(void *arg)
 {
