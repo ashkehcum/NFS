@@ -37,10 +37,21 @@ int main(int argc, char *argv[]){
     ss1.NM_Port=atoi(argv[2]);
 
     char accessible_paths[MAX_PATHS*MAX_PATH_LEN];
-    for(int i=3; i<argc; i++){
-        strcat(accessible_paths, argv[i]);
-        strcat(accessible_paths, " ");
+    // for(int i=3; i<argc; i++){
+    //     strcat(accessible_paths, argv[i]);
+    //     strcat(accessible_paths, " ");
+    // }
+    int k;
+    printf("Enter no of accessible paths: ");
+    scanf("%d", &k);
+    for(int i=0; i<k; i++){
+        char path[MAX_PATH_LEN];
+        printf("Enter path %d: ", i+1);
+        scanf("%s", path);
+        strcat(accessible_paths, path);
+        strcat(accessible_paths, ";");
     }
+    printf("%s\n", accessible_paths);
     
     // ss1.Client_Port=atoi(argv[2]);
     // char accessible_paths[MAX_PATHS*MAX_PATH_LEN];

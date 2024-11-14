@@ -195,7 +195,7 @@ void *client_listener(void *arg) {
         recv(client_sock, &req, sizeof(req), 0);
         printf("Received request from client: %s\n", req.data);
 
-        // send(client_sock, "Hello client server from storage server", strlen("Hello client server from storage server"), 0);
+        send(client_sock, "Hello client server from storage server", strlen("Hello client server from storage server"), 0);
         // st_request req2;
         // strcpy(req2.data, "Hello from storage server");
         // send(client_sock, &req2, sizeof(req2), 0);
