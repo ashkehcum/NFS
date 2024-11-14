@@ -1,2 +1,2 @@
 main:
-	gcc *.c -o NM
+	gcc *.c -g -o NM

@@ -25,6 +25,7 @@ int main(){
     // storage_server_count = 0;
     initialise();
     pthread_create(&working_thread, NULL, &work_handler, NULL);
+    pthread_join(working_thread, NULL);
     while(1);
 
     return 0;

@@ -37,14 +37,14 @@ void add_to_cache(my_cache* cache, request key, response value){
         for(int i = cache->curr_size-1; i > 0; i--){
             cache->cache_arr[i] = cache->cache_arr[i-1];
         }
-        cache->cache_arr[0].key = (response)malloc(sizeof(response));
+        cache->cache_arr[0].key = (request)malloc(sizeof(st_request));
         copy_request(cache->cache_arr[0].key, key);
-        cache->cache_arr[0].value = (response)malloc(sizeof(response));
+        cache->cache_arr[0].value = (response)malloc(sizeof(st_response));
         copy_response(cache->cache_arr[0].value, value);
     } else {
-        cache->cache_arr[cache->curr_size].key = (response)malloc(sizeof(response));
+        cache->cache_arr[cache->curr_size].key = (request)malloc(sizeof(st_request));
         copy_request(cache->cache_arr[cache->curr_size].key, key);
-        cache->cache_arr[cache->curr_size].value = (response)malloc(sizeof(response));
+        cache->cache_arr[cache->curr_size].value = (response)malloc(sizeof(st_response));
         copy_response(cache->cache_arr[cache->curr_size].value, value);
         cache->curr_size++;
     }
