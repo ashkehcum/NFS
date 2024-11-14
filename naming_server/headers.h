@@ -28,16 +28,21 @@
 #define RED_COLOR    "\033[0;31m"
 #define YELLOW_COLOR "\033[0;33m"
 
+#define NS_PORT 3000
+#define NS_IP "0.0.0.0"
+
 #define MAX_CLIENTS 100
 #define MAX_DATA_LENGTH 100000
-#define NS_PORT 3000
 #define MAX_CONNECTIONS 120
-#define NS_IP "0.0.0.0"
+#define MAX_FILE_NAME 30
 #define MAX_PATH_LEN  1024  
 #define MAX_REQUEST_LEN 1000
+#define MAX_FILES 25
+
 #define STORAGE_FLAG 1
 #define CLIENT_FLAG 2
-#define MAX_FILES 25
+
+// Request types
 #define READ_FILE 1
 #define WRITE_FILE 2
 #define GET_FILE_INFO 3
@@ -48,34 +53,6 @@
 extern int socket_arr[MAX_CONNECTIONS][2];
 
 void *work_handler();
-
-
-typedef struct st_request
-{
-    int request_type;
-    char data[MAX_REQUEST_LEN];
-} st_request;
-
-typedef st_request* request;
-
-typedef struct req_process
-{
-    int client_id;
-    int request_type;
-    char data[MAX_DATA_LENGTH];
-}req_process;
-
-
-typedef req_process* proc;
-
-
-typedef struct st_response
-{
-    int response_type;
-    char message[MAX_REQUEST_LEN];
-} st_response;
-typedef st_response* response;
-
 
 typedef struct storage_server{
     int storage_server_id;
@@ -96,14 +73,44 @@ typedef struct client{
     int Port_No;
 } client;
 
+typedef struct st_request
+{
+    int request_type;
+    char data[MAX_REQUEST_LEN];
+} st_request;
+typedef st_request* request;
+
+typedef struct req_process
+{
+    int client_id;
+    int request_type;
+    char data[MAX_DATA_LENGTH];
+}req_process;
+typedef req_process* proc;
+
+
+typedef struct st_response{
+    int response_type;
+    char message[MAX_REQUEST_LEN];
+} st_response;
+typedef st_response* response;
+
+typedef struct file_info{
+    char file_name[MAX_FILE_NAME];
+    char file_path[MAX_PATH_LEN];
+    int file_size;
+    bool is_audio;
+    bool is_dir;
+    time_t last_access_time;
+    time_t last_modified_time;
+} file_info;
+
 extern client client_list[MAX_CLIENTS];
 extern ss storage_server_list[100];
 extern int storage_server_count = 0;
 
-typedef struct req{
-
-} req;
-
 void handle_file_request(request req, int client_id);
+
+#include "cache_handling.h"
 
 #endif
