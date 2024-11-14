@@ -101,6 +101,7 @@ typedef struct st_request {
     int request_type;
     char data[MAX_REQUEST_LEN];
     char path[MAX_PATH_LEN];
+    char copytopath[MAX_PATH_LEN];
     char file_or_dir_name[MAX_FILE_NAME];
 } st_request;
 typedef st_request* request;
@@ -175,15 +176,13 @@ void Delete(char* path, int pos, node* hashtable);
 typedef struct LogEntry {
     time_t timestamp;             // The time of the log entry
     bool isClient;                // True if the log entry is for a client, false if for a SS
-    
-    char clientIP[INET_ADDRSTRLEN];  // IP address of the client or SS
-    int clientPort;               // Port number of the client or SS
-    char requestDetails[4096];    // Details of the request/command
-    char ackStatus[50];           // Acknowledgment status (e.g., "SUCCESS", "ERROR")
-    int clientID;                 // Unique ID for the client
+    char IP_Addr[INET_ADDRSTRLEN];  // IP address of the client or SS
+    int Port_No;               // Port number of the client or SS
+    st_request request;         // Request made by the client
+    int response_code;          // Response code of the request
 } LogEntry;
 
-void logMessage(const char *operation, const char *ip, int port, int clientID, const char *details, const char *status);
+void logMessage(bool isClient, char* IP_Addr, int Port_No, st_request request, int response_code);
 
 
 #include "cache_handling.h"
