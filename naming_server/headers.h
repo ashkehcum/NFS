@@ -110,6 +110,7 @@ typedef struct st_request {
     char path[MAX_PATH_LEN];
     char copy_to_path[MAX_PATH_LEN];
     char file_or_dir_name[MAX_FILE_NAME];
+    int socket;
 } st_request;
 typedef st_request* request;
 
@@ -117,6 +118,10 @@ typedef struct req_process {
     int client_id;
     int request_type;
     char data[MAX_DATA_LENGTH];
+    char path[MAX_PATH_LEN];
+    char copy_to_path[MAX_PATH_LEN];
+    char file_or_dir_name[MAX_FILE_NAME];
+    int socket;
 }req_process;
 typedef req_process* proc;
 

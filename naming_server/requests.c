@@ -4,7 +4,7 @@ extern node* hashtable;
 // only arrive here if the request is a READ, WRITE, GET_FILE_INFO or STREAM_AUDIO
 void handle_file_request(request req, int client_id){
     if(req->request_type == GET_FILE_INFO || req->request_type == READ_FILE || req->request_type == WRITE_FILE){
-        if(strstr(req->data, ".txt") == NULL){
+        if(strstr(req->path, ".txt") == NULL){
             // printf("Here\n");
             response r = (response)malloc(sizeof(st_response));
             r->response_type = INVALID_FILETYPE;
@@ -18,7 +18,7 @@ void handle_file_request(request req, int client_id){
         }
     }
     if(req->request_type == STREAM_AUDIO) {
-        if(strstr(req->data, ".mp3") == NULL){
+        if(strstr(req->path, ".mp3") == NULL){
             response r = (response)malloc(sizeof(st_response));
             r->response_type = INVALID_FILETYPE;
             strcpy(r->message, "Incompatible file opened!");
@@ -31,7 +31,9 @@ void handle_file_request(request req, int client_id){
         }
     } 
     response r = (response)malloc(sizeof(st_response));
+    printf("%s\n", req->path);
     int id = Get(req->path);
+    printf("id: %d\n", id);
     if(id!=-1) {
         r->response_type = FILE_FOUND;
         snprintf(r->message, sizeof(r->message), "%s | %d", storage_server_list[id]->IP_Addr, storage_server_list[id]->Port_No);

@@ -1,28 +1,184 @@
-Client :
-Time Stamp: 2024-11-15 14:41:25
-IP Address: 10.42.0.217
-Port Number: 41972
-Request Type: READ_FILE
-Response Code: FILE_NOT_FOUND
+Storage Server :
+Time Stamp: 2024-11-15 18:12:15
+IP Address: 10.42.0.50
+Port Number: 43264
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
 
 Client :
-Time Stamp: 2024-11-15 14:42:04
+Time Stamp: 2024-11-15 18:12:31
 IP Address: 10.42.0.217
-Port Number: 48018
+Port Number: 60838
 Request Type: READ_FILE
 Response Code: FILE_FOUND
+Cache Miss
 
 Client :
-Time Stamp: 2024-11-15 14:42:49
+Time Stamp: 2024-11-15 18:12:40
 IP Address: 10.42.0.217
-Port Number: 39200
+Port Number: 41674
 Request Type: READ_FILE
 Response Code: FILE_FOUND
+Cache Hit
 
 Client :
-Time Stamp: 2024-11-15 15:20:02
-IP Address: 10.1.130.58
-Port Number: 60314
+Time Stamp: 2024-11-15 18:13:19
+IP Address: 10.42.0.217
+Port Number: 37122
 Request Type: READ_FILE
 Response Code: FILE_FOUND
+Cache Hit
+
+Storage Server :
+Time Stamp: 2024-11-15 18:17:56
+IP Address: 10.42.0.50
+Port Number: 37370
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:18:28
+IP Address: 10.42.0.217
+Port Number: 47330
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:18:50
+IP Address: 10.42.0.217
+Port Number: 47858
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Storage Server :
+Time Stamp: 2024-11-15 18:20:00
+IP Address: 10.42.0.50
+Port Number: 40580
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:20:10
+IP Address: 10.42.0.217
+Port Number: 52332
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Miss
+
+Storage Server :
+Time Stamp: 2024-11-15 18:21:33
+IP Address: 10.42.0.50
+Port Number: 38446
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:21:46
+IP Address: 10.42.0.217
+Port Number: 48170
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:22:27
+IP Address: 10.42.0.217
+Port Number: 57314
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Storage Server :
+Time Stamp: 2024-11-15 18:25:29
+IP Address: 10.42.0.50
+Port Number: 39778
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:25:53
+IP Address: 10.42.0.217
+Port Number: 38616
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Miss
+
+Storage Server :
+Time Stamp: 2024-11-15 18:27:07
+IP Address: 10.42.0.50
+Port Number: 59178
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:27:30
+IP Address: 10.42.0.217
+Port Number: 57470
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Storage Server :
+Time Stamp: 2024-11-15 18:28:53
+IP Address: 10.42.0.50
+Port Number: 55174
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:29:12
+IP Address: 10.42.0.217
+Port Number: 43266
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Client :
+Time Stamp: 2024-11-15 18:30:44
+IP Address: 10.42.0.217
+Port Number: 52314
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Client :
+Time Stamp: 2024-11-15 18:31:08
+IP Address: 10.42.0.217
+Port Number: 35502
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Client :
+Time Stamp: 2024-11-15 18:32:00
+IP Address: 10.42.0.217
+Port Number: 50778
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
+
+Storage Server :
+Time Stamp: 2024-11-15 18:37:46
+IP Address: 10.42.0.50
+Port Number: 51530
+Request Type: STORAGE_SERVER_CONNECTION
+Response Code: INVALID
+Cache Miss
+
+Client :
+Time Stamp: 2024-11-15 18:37:58
+IP Address: 10.42.0.217
+Port Number: 38894
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+Cache Hit
 

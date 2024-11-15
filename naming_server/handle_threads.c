@@ -12,6 +12,10 @@ void* handle_client_process(void *arg) {
     request req = (request)malloc(sizeof(st_request));
     req->request_type = n->request_type;
     strcpy(req->data, n->data);
+    strcpy(req->path, n->path);
+    strcpy(req->copy_to_path, n->copy_to_path);
+    strcpy(req->file_or_dir_name, n->file_or_dir_name);
+    req->socket = n->socket;
     if(req->request_type == READ_FILE || req->request_type == WRITE_FILE || req->request_type == GET_FILE_INFO || req->request_type == STREAM_AUDIO) {
         handle_file_request(req, client_id);
     }
@@ -42,9 +46,6 @@ void* client_handler(void *arg)
             close(client_socket);
             break;
         }
-        printf("Request received from client\n");
-        printf("%d\n",req->request_type);
-        printf("%s\n",req->data);
         int req_valid = 1;
         if(req->request_type == -1)
         {
@@ -56,11 +57,19 @@ void* client_handler(void *arg)
         {
             pthread_t process;
             proc n = (proc)malloc(sizeof(req_process));
+            n->client_id = client_socket;
             n->request_type = req->request_type;
             strcpy(n->data, req->data);
-            n->client_id = client_socket;
+            strcpy(n->path, req->path);
+            strcpy(n->copy_to_path, req->copy_to_path);
+            strcpy(n->file_or_dir_name, req->file_or_dir_name);
+            n->socket = client_socket;
+
             response res = get_from_cache(req);
             if(res != NULL){
+                printf("%s\n", res->message);
+                printf("%s\n", res->IP_Addr);
+                printf("%d\n", res->Port_No);
                 send(client_socket, res, sizeof(st_response), 0);
                 logMessage(CLIENT_FLAG, client_socket, *req, res->response_type,1);
                 free(req);
@@ -170,7 +179,9 @@ void *work_handler(){
                     char *token = strtok(s->paths, ";");
                     while (token != NULL) {
                         printf("%s\n", token);
+                        printf("Hash: %lu\n", create_hash(token));
                         Insert(token, storage_server_count);
+                        printf("%d\n", Get(token));
                         token = strtok(NULL, ";");
                     }
                     
