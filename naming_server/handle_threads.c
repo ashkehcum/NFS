@@ -201,7 +201,6 @@ void *work_handler(){
                     printf("Storage server Port: %d\n", s->Port_No);
                     printf("Storage server Paths:\n");
                     char *token = strtok(s->paths, ";");
-                    return 0;
                     // int value = create_hash(token, primes, strlen(token));
                     // Insert(token, strlen(token), value, hashtable, storage_server_count);
                     while (token != NULL) {

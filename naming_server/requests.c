@@ -41,7 +41,7 @@ void handle_file_request(request req, int client_id){
             break;
         }  
     }
-    if(file_found) {
+    if(1) {
         r->response_type = FILE_FOUND;
         snprintf(r->message, sizeof(r->message), "%s | %d", storage_server_list[id]->IP_Addr, storage_server_list[id]->Port_No);
         strcpy(r->IP_Addr, storage_server_list[id]->IP_Addr);

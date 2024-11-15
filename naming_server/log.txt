@@ -1,0 +1,21 @@
+Client :
+Time Stamp: 2024-11-15 14:41:25
+IP Address: 10.42.0.217
+Port Number: 41972
+Request Type: READ_FILE
+Response Code: FILE_NOT_FOUND
+
+Client :
+Time Stamp: 2024-11-15 14:42:04
+IP Address: 10.42.0.217
+Port Number: 48018
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+
+Client :
+Time Stamp: 2024-11-15 14:42:49
+IP Address: 10.42.0.217
+Port Number: 39200
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+
