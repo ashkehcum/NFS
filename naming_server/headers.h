@@ -65,9 +65,9 @@
 #define WRITE_FILE 2
 #define GET_FILE_INFO 3
 #define STREAM_AUDIO 4
-#define COPY_FILE 7
 #define DELETE_FILE 5
 #define CREATE_FILE 6
+#define COPY_FILE 7
 #define COPY_DIR 8
 #define DELETE_DIR 9
 #define CREATE_DIR 10
