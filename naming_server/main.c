@@ -7,16 +7,7 @@ node* hashtable;
 int* primes;
 void initialise()
 {
-    // create a array that stores prime numbers
-    primes = (int*)malloc(250 * sizeof(int));
-    int i = 0, pre = 1;
-    while(i < 250){
-        int x = findnextprime(pre);
-        primes[i] = x;
-        pre = x;
-        ++i;
-    }
-    hashtable = Create_hastable(100003);
+    hashtable = Create_hashtable(196613);
 }
 int main(){
     printf("Naming Server Started\n");

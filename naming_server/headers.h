@@ -59,6 +59,7 @@
 #define FILE_DELETE_ERROR 408
 #define FILE_CREATE_ERROR 409
 #define FILE_COPY_ERROR 410
+#define COPY_TO_PATH_INVALID 411
 
 // Request types
 #define READ_FILE 1
@@ -76,8 +77,8 @@
 typedef struct storage_server{
     int storage_server_id;
     char IP_Addr[16];
-    int Port_No; // connected to the naming server
-    int Client_Port; // connected to the client
+    int Port_No;   // port of storage server through which communicates to the naming server
+    int Client_Port; // port with which ss communicates to client and is given by NS
     
     struct storage_server *b1;
     struct storage_server *b2;
@@ -87,7 +88,8 @@ typedef storage_server* ss;
 
 typedef struct storage_server_info {
     char IP_Addr[16];
-    int Port_No;
+    int NS_Port_No;             // port with which ss is connected to naming server
+    int Client_Port_No;         // port with which ss communicates to client
     char paths[MAX_PATHS*MAX_PATH_LEN];
 } storage_server_info;
 typedef storage_server_info* ss_info;
@@ -145,30 +147,25 @@ void handle_file_request(request req, int client_id);
 
 
 // Hashing
-extern int* primes;
+#define itablesize 196613
 
-typedef struct st_node{
-    char* path;   // path
-    int len;   // length of the path entered
-    int s_index;     // index of the storage server
-    struct st_node* next;
-}st_node;
+typedef struct st_node {
+    char* path;              // Path string
+    int len;                 // Length of the path
+    int s_index;             // Storage server index
+    struct st_node* next;    // Pointer to the next node in the chain
+} st_node;
 
 typedef st_node* node;
 
-typedef struct compress{
-    char* a;
-    long long int hashval;
-}compress;
-
-extern node* hashtable;
-node* Create_hastable(int itablesize);
+node* Create_hashtable();
+void Free_hashtable(node* hashtable);
 int isPrime(int x);
-int findnextprime(int x);
-long long int create_hash(char* x, int* primes, int n);
-void Insert(char* path, int l, int pos, node* hashtable, int s_i);
-int get(node* hashtable, char* cmp, int pos);
-void Delete(char* path, int pos, node* hashtable);
+int find_next_prime(int x);
+unsigned long create_hash(const char* x);
+void Insert(node* hashtable, const char* path, int s_i);
+int Get(node* hashtable, const char* path);
+void Delete(node* hashtable, const char* path);
 
 
 

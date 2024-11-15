@@ -1,71 +1,81 @@
-#include"headers.h"
+#include "headers.h"
 
-node* Create_hastable(int itablesize){
-    node* temp = (node*) malloc(sizeof(node) * itablesize);
-    for(int i = 0; i < itablesize; ++i){
-        temp[i] = (node) malloc(sizeof(st_node));
-        temp[i]->next = NULL;
-    }
+// Create the hash table
+node* Create_hashtable() {
+    node* temp = (node*)calloc(itablesize, sizeof(node));
     return temp;
 }
 
-int isPrime(int x){
-    for(int i = 2; i * i <= x; ++i){
-        if(x % i == 0)
-            return 0;
+// Free the hash table and its nodes
+void Free_hashtable(node* hashtable) {
+    for (int i = 0; i < itablesize; ++i) {
+        node cur = hashtable[i];
+        while (cur) {
+            node to_free = cur;
+            cur = cur->next;
+            free(to_free->path);
+            free(to_free);
+        }
     }
-    return 1;
+    free(hashtable);
 }
 
-int findnextprime(int x){
-    for(int i = x + 1; ; ++i){
-        if(isPrime(i))
-            return i;
+// Create a hash value for the given path
+unsigned long create_hash(const char* x) {
+    unsigned long hash = 5381; // A common hashing seed
+    int c;
+    while ((c = *x++)) {
+        hash = ((hash << 5) + hash) + c; // hash * 33 + c
     }
+    return hash % itablesize;
 }
 
-long long int create_hash(char* x, int* primes, int n){
-    long long int ans = 1, mod = 100003;
-    for(int i = 0; i < n; ++i)
-        ans = (ans * primes[x[i] - 'a']) % mod;
-    return ans;
+// Insert a path into the hash table
+void Insert(node* hashtable, const char* path, int s_i) {
+    int pos = create_hash(path);
+
+    // Create a new node
+    node new_node = (node)malloc(sizeof(st_node));
+    new_node->path = strdup(path);
+    new_node->len = strlen(path);
+    new_node->s_index = s_i;
+    new_node->next = hashtable[pos];
+
+    // Insert at the beginning of the chain
+    hashtable[pos] = new_node;
 }
 
-void Insert(char* path, int l, int pos, node* hashtable, int s_i){
-    node cur = (node) malloc(sizeof(st_node));
-    cur->len = l;
-    cur->path = (char*) malloc(strlen(path) + 1);
-    strcpy(cur->path, path);
-    cur->s_index = s_i;
-    cur->next = hashtable[pos]->next;
-    hashtable[pos]->next = cur;
-}
-
-int get(node* hashtable, char* cmp, int pos){
-    node cur = hashtable[pos]->next;
-    while(cur != NULL){
-        if(strcmp(cur->path, cmp) == 0)
+// Get the storage index of a path
+int Get(node* hashtable, const char* path) {
+    int pos = create_hash(path);
+    node cur = hashtable[pos];
+    while (cur) {
+        if (strcmp(cur->path, path) == 0)
             return cur->s_index;
         cur = cur->next;
     }
-    return -1;
+    return -1; // Path not found
 }
 
-void Delete(char* path, int pos, node* hashtable) {
-    node cur = hashtable[pos]->next;
-    node pre = NULL;
+// Delete a path from the hash table
+void Delete(node* hashtable, const char* path) {
+    int pos = create_hash(path);
+    node cur = hashtable[pos];
+    node prev = NULL;
 
-    while (cur != NULL) {
-        if (!strcmp(cur->path, path)) {
-            if (pre == NULL) {
-                hashtable[pos] = cur->next;
+    while (cur) {
+        if (strcmp(cur->path, path) == 0) {
+            if (prev) {
+                prev->next = cur->next;
             } else {
-                pre->next = cur->next;
+                hashtable[pos] = cur->next;
             }
 
+            free(cur->path);
+            free(cur);
             return;
         }
-        pre = cur;
+        prev = cur;
         cur = cur->next;
     }
 }

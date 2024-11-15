@@ -31,6 +31,7 @@ const char* get_respone_name(int value) {
         case FILE_CREATE_ERROR: return "FILE_CREATE_ERROR";
         case FILE_COPY_ERROR: return "FILE_COPY_ERROR";
         case FILE_FOUND: return "FILE_FOUND";
+        case COPY_TO_PATH_INVALID: return "COPY_TO_PATH_INVALID";
         default: return "INVALID";
     }
 }

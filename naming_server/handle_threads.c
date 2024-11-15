@@ -7,8 +7,7 @@ int storage_server_count = 0;
 
 void file_requests_to_storage_server(request req, int client_id)
 {
-    int value = create_hash(req->path, primes, strlen(req->path));
-    int storage_server_id = get(hashtable, req->path, value);
+    int storage_server_id = Get(hashtable, req->path);
     request r = (request)malloc(sizeof(st_request));
     if(storage_server_id == -1)
     {
@@ -18,6 +17,7 @@ void file_requests_to_storage_server(request req, int client_id)
         strcpy(res->IP_Addr, "");
         res->Port_No = -1;
         send(client_id, res, sizeof(st_response), 0);
+        logMessage(CLIENT_FLAG, client_id, *req, FILE_NOT_FOUND);
         return;
     }
     if(req->request_type == CREATE_FILE)
@@ -28,6 +28,7 @@ void file_requests_to_storage_server(request req, int client_id)
         strcpy(r->path, req->path);
         strcpy(r->data, req->data);  
         send(socket_arr[storage_server_id][0], r, sizeof(st_request), 0);
+        // ss respose left
     }
     else if(req->request_type == DELETE_FILE)
     {
@@ -39,6 +40,17 @@ void file_requests_to_storage_server(request req, int client_id)
     }
     else
     {
+        int res = Get(hashtable, req->copy_to_path);
+        if(res == -1)
+        {
+            response res = (response)malloc(sizeof(st_response));
+            res->response_type = COPY_TO_PATH_INVALID;
+            strcpy(res->message, "Path not found");
+            strcpy(res->IP_Addr, "");
+            res->Port_No = -1;
+            send(client_id, res, sizeof(st_response), 0);
+            return;
+        }
         r->request_type = COPY_FILE;
         strcpy(r->file_or_dir_name, req->file_or_dir_name);
         strcpy(r->path, req->path);
@@ -198,23 +210,22 @@ void *work_handler(){
                     }
                     // print the contents of s
                     printf("Storage server IP: %s\n", s->IP_Addr);
-                    printf("Storage server Port: %d\n", s->Port_No);
+                    printf("Storage server Port to NS: %d\n", s->NS_Port_No);
+                    printf("Storage server Port to Client: %d\n", s->Client_Port_No);
                     printf("Storage server Paths:\n");
+
                     char *token = strtok(s->paths, ";");
-                    // int value = create_hash(token, primes, strlen(token));
-                    // Insert(token, strlen(token), value, hashtable, storage_server_count);
                     while (token != NULL) {
                         printf("%s\n", token);
-                        // int value = create_hash(token, primes, strlen(token));
-                        // Insert(token, strlen(token), value, hashtable, storage_server_count);
+                        Insert(hashtable, token, storage_server_count);
                         token = strtok(NULL, ";");
                     }
                     
                     storage_server_list[storage_server_count] = (ss)malloc(sizeof(storage_server));
                     storage_server_list[storage_server_count]->storage_server_id = storage_server_count;
                     strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
-                    storage_server_list[storage_server_count]->Port_No = s->Port_No;
-                    storage_server_list[storage_server_count]->Client_Port = -1;
+                    storage_server_list[storage_server_count]->Port_No = s->NS_Port_No;
+                    storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
                     
                     storage_server_count++;
                     // create a new thread to handle the requests sent to storage server

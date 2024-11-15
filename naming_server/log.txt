@@ -19,3 +19,10 @@ Port Number: 39200
 Request Type: READ_FILE
 Response Code: FILE_FOUND
 
+Client :
+Time Stamp: 2024-11-15 15:20:02
+IP Address: 10.1.130.58
+Port Number: 60314
+Request Type: READ_FILE
+Response Code: FILE_FOUND
+
