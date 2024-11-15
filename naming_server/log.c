@@ -14,6 +14,7 @@ const char* get_request_name(int value) {
         case DELETE_DIR: return "DELETE_DIR";
         case CREATE_DIR: return "CREATE_DIR";
         case FILE_FOUND: return "FILE_FOUND";
+        case STORAGE_SERVER_CONNECTION: return "STORAGE_SERVER_CONNECTION";
         default: return "INVALID";
     }
 }
@@ -32,6 +33,8 @@ const char* get_respone_name(int value) {
         case FILE_COPY_ERROR: return "FILE_COPY_ERROR";
         case FILE_FOUND: return "FILE_FOUND";
         case COPY_TO_PATH_INVALID: return "COPY_TO_PATH_INVALID";
+        case PATH_NOT_FOUND: return "PATH_NOT_FOUND";
+        case PATH_FOUND: return "PATH_FOUND";
         default: return "INVALID";
     }
 }

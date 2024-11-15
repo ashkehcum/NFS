@@ -5,61 +5,6 @@ extern node* hashtable;
 int socket_arr[MAX_CONNECTIONS][2];
 int storage_server_count = 0;
 
-void file_requests_to_storage_server(request req, int client_id)
-{
-    int storage_server_id = Get(hashtable, req->path);
-    request r = (request)malloc(sizeof(st_request));
-    if(storage_server_id == -1)
-    {
-        response res = (response)malloc(sizeof(st_response));
-        res->response_type = FILE_NOT_FOUND;
-        strcpy(res->message, "File not found");
-        strcpy(res->IP_Addr, "");
-        res->Port_No = -1;
-        send(client_id, res, sizeof(st_response), 0);
-        logMessage(CLIENT_FLAG, client_id, *req, FILE_NOT_FOUND);
-        return;
-    }
-    if(req->request_type == CREATE_FILE)
-    {
-        // send a request to the storage server
-        r->request_type = CREATE_FILE;
-        strcpy(r->file_or_dir_name, req->file_or_dir_name);
-        strcpy(r->path, req->path);
-        strcpy(r->data, req->data);  
-        send(socket_arr[storage_server_id][0], r, sizeof(st_request), 0);
-        // ss respose left
-    }
-    else if(req->request_type == DELETE_FILE)
-    {
-        r->request_type = DELETE_FILE;
-        strcpy(r->file_or_dir_name, req->file_or_dir_name);
-        strcpy(r->path, req->path);
-        strcpy(r->data,req->data);
-        send(socket_arr[storage_server_id][0], r, sizeof(st_request), 0);
-    }
-    else
-    {
-        int res = Get(hashtable, req->copy_to_path);
-        if(res == -1)
-        {
-            response res = (response)malloc(sizeof(st_response));
-            res->response_type = COPY_TO_PATH_INVALID;
-            strcpy(res->message, "Path not found");
-            strcpy(res->IP_Addr, "");
-            res->Port_No = -1;
-            send(client_id, res, sizeof(st_response), 0);
-            return;
-        }
-        r->request_type = COPY_FILE;
-        strcpy(r->file_or_dir_name, req->file_or_dir_name);
-        strcpy(r->path, req->path);
-        strcpy(r->data, req->data);
-        strcpy(r->copy_to_path, req->copy_to_path);
-        send(socket_arr[storage_server_id][0], r, sizeof(st_request), 0);
-    }
-    free(r);
-}
 void* handle_client_process(void *arg) {
     // handle the client request
     proc n = (proc)arg;
@@ -75,6 +20,7 @@ void* handle_client_process(void *arg) {
     }
     free(req);
 }
+
 void* client_handler(void *arg)
 {
     int client_socket = *(int *)arg;
@@ -87,7 +33,6 @@ void* client_handler(void *arg)
             free(req);
             // perror("Error in receiving request from client");
             printf("error recieving");
-
             break;
             // exit(1);
         } else if(res == 0){
@@ -129,6 +74,7 @@ void* storage_server_handler()
 {
     
 }
+
 void *work_handler(){
     // create a socket for the naming server
     int server_socket = socket(AF_INET, SOCK_STREAM, 0);
@@ -228,6 +174,10 @@ void *work_handler(){
                     storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
                     
                     storage_server_count++;
+                    request req = (request)malloc(sizeof(st_request));
+                    req->request_type = STORAGE_SERVER_CONNECTION;
+                    logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED);
+                    free(req);
                     // create a new thread to handle the requests sent to storage server
                     pthread_t storage_thread;
                     pthread_create(&storage_thread, NULL, &storage_server_handler, (void *)&socket_arr[i][0]);

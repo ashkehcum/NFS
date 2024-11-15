@@ -48,7 +48,9 @@
 #define CLIENT_FLAG 1
 
 // Response types
+#define STORAGE_SERVER_CONNECTED 100
 #define FILE_FOUND 200
+#define PATH_FOUND 201
 // Error codes
 #define INVALID_REQUEST 400
 #define INVALID_FILETYPE 402
@@ -60,6 +62,7 @@
 #define FILE_CREATE_ERROR 409
 #define FILE_COPY_ERROR 410
 #define COPY_TO_PATH_INVALID 411
+#define PATH_NOT_FOUND 412
 
 // Request types
 #define READ_FILE 1
@@ -72,6 +75,7 @@
 #define COPY_DIR 8
 #define DELETE_DIR 9
 #define CREATE_DIR 10
+#define STORAGE_SERVER_CONNECTION 11
 
 // Structures
 typedef struct storage_server{
@@ -142,7 +146,7 @@ extern int storage_server_count;
 // Functions for handling requests
 void *work_handler();
 void handle_file_request(request req, int client_id);
-
+void file_requests_to_storage_server(request req, int client_id);
 
 
 
