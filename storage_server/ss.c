@@ -29,7 +29,8 @@ int main(int argc, char *argv[]){
     }
     printf("%s %d\n", ip, ss_port_no);
     strncpy(ss1.IP_Addr, ip, sizeof(ss1.IP_Addr));
-    ss1.Port_No=ss_port_no;
+    // ss1.Port_No=ss_port_no;
+    ss1.Port_No=NS_LISTEN_PORT;
     // ss1.NM_Port=atoi(argv[1]);
     
     strcpy(nm_ip, argv[1]);
@@ -65,8 +66,8 @@ int main(int argc, char *argv[]){
 
     // Starting threads for listening to Naming Server and Clients
     pthread_t ns_thread, client_thread;
-    // pthread_create(&ns_thread, NULL, naming_server_listener, (void *)&ss1);
-    pthread_create(&client_thread, NULL, client_listener, (void *)&ss_port_no);
+    pthread_create(&ns_thread, NULL, naming_server_listener, NULL);
+    pthread_create(&client_thread, NULL, client_listener, NULL);
 
     // Wait for threads to finish
     // pthread_join(ns_thread, NULL);

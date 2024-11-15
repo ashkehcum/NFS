@@ -34,17 +34,22 @@
 // port defining
 #define NS_PORT 3000
 #define NS_IP "0.0.0.0"
+#define NS_LISTEN_PORT 4096
+#define CLIENT_LISTEN_PORT 4097
 
 // max limits set
 #define MAX_CLIENTS 100
+#define MAX_THREADS 20
 #define MAX_DATA_LENGTH 100000
 #define MAX_CONNECTIONS 120
 #define MAX_FILE_NAME 30
-#define MAX_REQUEST_LEN 1000
+#define MAX_REQUEST_LEN 1024
+#define BUFFER_SIZE 1024
 #define MAX_FILES 25
 #define MAX_PATHS 100
 #define MAX_PATH_LEN 50
 #define IP_ADDR_LEN 16
+#define CHUNK_SIZE 1024
 
 // flags
 #define STORAGE_FLAG 0
@@ -72,6 +77,8 @@
 #define COPY_DIR 8
 #define DELETE_DIR 9
 #define CREATE_DIR 10
+#define STORAGE_SERVER_CONNECTION 11
+#define ACK_MSG 12
 #define FILE_FOUND 200
 
 typedef struct storage_server{
@@ -89,7 +96,8 @@ typedef struct storage_server{
 
 typedef struct storage_server_info{
     char IP_Addr[IP_ADDR_LEN];
-    int Port_No;
+    int NS_Port_No;
+    int Client_Port_No;
     char paths[MAX_PATHS*MAX_PATH_LEN];
 } storage_server_info;
 
@@ -105,7 +113,17 @@ typedef struct request{
     char path[MAX_PATH_LEN];
     char file_or_dir_name[MAX_FILE_NAME];
     char copy_to_path[MAX_PATH_LEN];
+    int socket;
 } st_request;
+
+typedef struct client_request{
+    int request_type;
+    char data[MAX_REQUEST_LEN];
+    char path[MAX_PATH_LEN];
+    char file_or_dir_name[MAX_FILE_NAME];
+    char copy_to_path[MAX_PATH_LEN];
+    int client_socket;
+} client_request;
 
 typedef struct req_process {
     int client_id;
