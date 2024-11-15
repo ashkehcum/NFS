@@ -159,17 +159,15 @@ typedef struct st_node {
     int s_index;             // Storage server index
     struct st_node* next;    // Pointer to the next node in the chain
 } st_node;
-
 typedef st_node* node;
+extern node* hashtable;
 
 node* Create_hashtable();
-void Free_hashtable(node* hashtable);
-int isPrime(int x);
-int find_next_prime(int x);
+void Free_hashtable();
 unsigned long create_hash(const char* x);
-void Insert(node* hashtable, const char* path, int s_i);
-int Get(node* hashtable, const char* path);
-void Delete(node* hashtable, const char* path);
+void Insert(const char* path, int s_i);
+int Get(const char* path);
+void Delete(const char* path);
 
 
 
@@ -184,9 +182,29 @@ typedef struct LogEntry {
     int response_code;          // Response code of the request
 } LogEntry;
 
-void logMessage(bool isClient, int client_socket, st_request request, int response_code);
+void logMessage(bool isClient, int client_socket, st_request request, int response_code,bool fromcache);
 
+// Cache Handling
+#define CACHE_SIZE 15
+#define MAX_CACHE_ENTRY_SIZE 100
+typedef struct cache_entry{
+    request key;
+    response value;
+} cache_entry;
 
-#include "cache_handling.h"
+typedef struct my_cache{
+    cache_entry cache_arr[CACHE_SIZE];
+    int curr_size;
+} my_cache;
+extern my_cache* cache;
+
+my_cache* initialize_cache();
+bool is_cache_full();
+bool is_cache_empty();
+void move_to_front(int index);
+void add_to_cache(request key, response value);
+response get_from_cache(request key);
+void remove_from_cache(request key);
+
 
 #endif

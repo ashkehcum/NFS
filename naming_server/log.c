@@ -40,7 +40,7 @@ const char* get_respone_name(int value) {
 }
 
 // Function to log messages to file
-void logMessage(bool isClient, int client_socket, st_request request, int response_code) {
+void logMessage(bool isClient, int client_socket, st_request request, int response_code, bool fromcache) {
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
     char IP_Addr[INET_ADDRSTRLEN];  // Buffer for storing the IP address
@@ -80,6 +80,11 @@ void logMessage(bool isClient, int client_socket, st_request request, int respon
     fprintf(log_file, "Port Number: %d\n", Port_No);
     fprintf(log_file, "Request Type: %s\n", get_request_name(request.request_type));
     fprintf(log_file, "Response Code: %s\n", get_respone_name(response_code));
+    if(fromcache) {
+        fprintf(log_file, "Cache Hit\n");
+    } else {
+        fprintf(log_file, "Cache Miss\n");
+    }
     fprintf(log_file, "\n");
     fclose(log_file);
 }

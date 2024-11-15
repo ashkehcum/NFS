@@ -59,12 +59,19 @@ void* client_handler(void *arg)
             n->request_type = req->request_type;
             strcpy(n->data, req->data);
             n->client_id = client_socket;
+            response res = get_from_cache(req);
+            if(res != NULL){
+                send(client_socket, res, sizeof(st_response), 0);
+                logMessage(CLIENT_FLAG, client_socket, *req, res->response_type,1);
+                free(req);
+                continue;
+            }
             pthread_create(&process, NULL, &handle_client_process, (void *)n);
             // join the thread &process
             pthread_join(process, NULL);
         } else{
             // log the invalid request
-            logMessage(CLIENT_FLAG, client_socket, *req, INVALID_REQUEST);
+            logMessage(CLIENT_FLAG, client_socket, *req, INVALID_REQUEST,0);
         }
         free(req);
     }
@@ -163,7 +170,7 @@ void *work_handler(){
                     char *token = strtok(s->paths, ";");
                     while (token != NULL) {
                         printf("%s\n", token);
-                        Insert(hashtable, token, storage_server_count);
+                        Insert(token, storage_server_count);
                         token = strtok(NULL, ";");
                     }
                     
@@ -176,7 +183,7 @@ void *work_handler(){
                     storage_server_count++;
                     request req = (request)malloc(sizeof(st_request));
                     req->request_type = STORAGE_SERVER_CONNECTION;
-                    logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED);
+                    logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED,0);
                     free(req);
                     // create a new thread to handle the requests sent to storage server
                     pthread_t storage_thread;

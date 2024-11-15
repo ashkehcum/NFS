@@ -7,7 +7,7 @@ node* Create_hashtable() {
 }
 
 // Free the hash table and its nodes
-void Free_hashtable(node* hashtable) {
+void Free_hashtable() {
     for (int i = 0; i < itablesize; ++i) {
         node cur = hashtable[i];
         while (cur) {
@@ -31,7 +31,7 @@ unsigned long create_hash(const char* x) {
 }
 
 // Insert a path into the hash table
-void Insert(node* hashtable, const char* path, int s_i) {
+void Insert(const char* path, int s_i) {
     int pos = create_hash(path);
 
     // Create a new node
@@ -46,7 +46,7 @@ void Insert(node* hashtable, const char* path, int s_i) {
 }
 
 // Get the storage index of a path
-int Get(node* hashtable, const char* path) {
+int Get(const char* path) {
     int pos = create_hash(path);
     node cur = hashtable[pos];
     while (cur) {
@@ -58,7 +58,7 @@ int Get(node* hashtable, const char* path) {
 }
 
 // Delete a path from the hash table
-void Delete(node* hashtable, const char* path) {
+void Delete(const char* path) {
     int pos = create_hash(path);
     node cur = hashtable[pos];
     node prev = NULL;

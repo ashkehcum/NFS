@@ -16,15 +16,15 @@ my_cache* initialize_cache(){
     return cache;
 }   
 
-bool is_cache_full(my_cache* cache){
+bool is_cache_full(){
     return cache->curr_size == CACHE_SIZE;
 }
 
-bool is_cache_empty(my_cache* cache){
+bool is_cache_empty(){
     return cache->curr_size == 0;
 }
 
-void move_to_front(my_cache* cache, int index){
+void move_to_front(int index){
     cache_entry temp = cache->cache_arr[index];
     for(int i = index; i > 0; i--){
         cache->cache_arr[i] = cache->cache_arr[i-1];
@@ -32,7 +32,7 @@ void move_to_front(my_cache* cache, int index){
     cache->cache_arr[0] = temp;
 }
 
-void add_to_cache(my_cache* cache, request key, response value){
+void add_to_cache(request key, response value){
     if(is_cache_full(cache)){
         for(int i = cache->curr_size-1; i > 0; i--){
             cache->cache_arr[i] = cache->cache_arr[i-1];
@@ -50,17 +50,17 @@ void add_to_cache(my_cache* cache, request key, response value){
     }
 }
 
-response get_from_cache(my_cache* cache, request key){
+response get_from_cache(request key){
     for(int i = 0; i < cache->curr_size; i++){
         if(strcmp(cache->cache_arr[i].key->data, key->data) == 0){
-            move_to_front(cache, i);
+            move_to_front(i);
             return cache->cache_arr[0].value;
         }
     }
     return NULL;
 }
 
-void remove_from_cache(my_cache* cache, request key){
+void remove_from_cache(request key){
     // check if present and delete along with freeing memory
     for(int i = 0; i < cache->curr_size; i++){
         if(strcmp(cache->cache_arr[i].key->data, key->data) == 0){
