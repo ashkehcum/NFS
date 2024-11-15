@@ -47,6 +47,8 @@
 #define STORAGE_FLAG 0
 #define CLIENT_FLAG 1
 
+// Response types
+#define FILE_FOUND 200
 // Error codes
 #define INVALID_REQUEST 400
 #define INVALID_FILETYPE 402
@@ -69,7 +71,6 @@
 #define COPY_DIR 8
 #define DELETE_DIR 9
 #define CREATE_DIR 10
-#define FILE_FOUND 200
 
 // Structures
 typedef struct storage_server{
@@ -182,7 +183,7 @@ typedef struct LogEntry {
     int response_code;          // Response code of the request
 } LogEntry;
 
-void logMessage(bool isClient, char* IP_Addr, int Port_No, st_request request, int response_code);
+void logMessage(bool isClient, int client_socket, st_request request, int response_code);
 
 
 #include "cache_handling.h"

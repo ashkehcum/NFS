@@ -55,12 +55,10 @@ void* handle_client_process(void *arg) {
     request req = (request)malloc(sizeof(st_request));
     req->request_type = n->request_type;
     strcpy(req->data, n->data);
-    if(req->request_type == READ_FILE || req->request_type == WRITE_FILE || req->request_type == GET_FILE_INFO || req->request_type == STREAM_AUDIO)
-    {
-       handle_file_request(req, client_id);
+    if(req->request_type == READ_FILE || req->request_type == WRITE_FILE || req->request_type == GET_FILE_INFO || req->request_type == STREAM_AUDIO) {
+        handle_file_request(req, client_id);
     }
-    else if(req->request_type == CREATE_FILE || req->request_type == DELETE_FILE || req->request_type == COPY_FILE)
-    {
+    else if(req->request_type == CREATE_FILE || req->request_type == DELETE_FILE || req->request_type == COPY_FILE) {
         file_requests_to_storage_server(req, client_id);
     }
     free(req);
@@ -107,6 +105,9 @@ void* client_handler(void *arg)
             pthread_create(&process, NULL, &handle_client_process, (void *)n);
             // join the thread &process
             pthread_join(process, NULL);
+        } else{
+            // log the invalid request
+            logMessage(CLIENT_FLAG, client_socket, *req, INVALID_REQUEST);
         }
         free(req);
     }
