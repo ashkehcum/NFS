@@ -22,6 +22,15 @@ void* handle_client_process(void *arg) {
     else if(req->request_type == CREATE_FILE || req->request_type == DELETE_FILE || req->request_type == COPY_FILE) {
         file_requests_to_storage_server(req, client_id);
     }
+    else if(req->request_type == LIST_PATHS)
+    {   
+        response r;
+        printf("Printing all paths\n");
+        r = Print_all_paths();
+        printf("%s\n", r->message);
+        send(client_id, r, sizeof(st_response), 0);
+        logMessage(CLIENT_FLAG, client_id, *req, r->response_type,0);
+    }
     free(req);
 }
 
@@ -67,9 +76,9 @@ void* client_handler(void *arg)
 
             response res = get_from_cache(req);
             if(res != NULL){
-                printf("%s\n", res->message);
-                printf("%s\n", res->IP_Addr);
-                printf("%d\n", res->Port_No);
+                // printf("%s\n", res->message);
+                // printf("%s\n", res->IP_Addr);
+                // printf("%d\n", res->Port_No);
                 send(client_socket, res, sizeof(st_response), 0);
                 logMessage(CLIENT_FLAG, client_socket, *req, res->response_type,1);
                 free(req);
@@ -164,12 +173,13 @@ void *work_handler(){
                         free(s);
                         close(socket_arr[i][0]);
                         continue;
-                    } else if (bytes_received < sizeof(storage_server_info)) {
-                        fprintf(stderr, "Incomplete data received\n");
-                        free(s);
-                        close(socket_arr[i][0]);
-                        continue;
                     }
+                    //  else if (bytes_received < sizeof(storage_server_info)) {
+                    //     fprintf(stderr, "Incomplete data received\n");
+                    //     free(s);
+                    //     close(socket_arr[i][0]);
+                    //     continue;
+                    // }
                     // print the contents of s
                     printf("Storage server IP: %s\n", s->IP_Addr);
                     printf("Storage server Port to NS: %d\n", s->NS_Port_No);

@@ -39,6 +39,7 @@
 #define MAX_CONNECTIONS 120
 #define MAX_FILE_NAME 30
 #define MAX_REQUEST_LEN 1000
+#define MAX_RESPONSE_LEN 1000
 #define MAX_FILES 25
 #define MAX_PATHS 100
 #define MAX_PATH_LEN 50
@@ -76,6 +77,7 @@
 #define DELETE_DIR 9
 #define CREATE_DIR 10
 #define STORAGE_SERVER_CONNECTION 11
+#define LIST_PATHS 12
 
 // Structures
 typedef struct storage_server{
@@ -106,7 +108,7 @@ typedef struct client {
 
 typedef struct st_request {
     int request_type;
-    char data[MAX_REQUEST_LEN];
+    char data[MAX_RESPONSE_LEN];
     char path[MAX_PATH_LEN];
     char copy_to_path[MAX_PATH_LEN];
     char file_or_dir_name[MAX_FILE_NAME];
@@ -173,7 +175,7 @@ unsigned long create_hash(const char* x);
 void Insert(const char* path, int s_i);
 int Get(const char* path);
 void Delete(const char* path);
-
+response Print_all_paths();
 
 
 

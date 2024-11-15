@@ -79,3 +79,27 @@ void Delete(const char* path) {
         cur = cur->next;
     }
 }
+
+response Print_all_paths() {
+    response req = (response)malloc(sizeof(st_response));
+    req->response_type = 3;
+    for (int i = 0; i < itablesize; ++i) {
+        node cur = hashtable[i];
+        while (cur) {
+             if (strlen(req->message) + strlen(cur->path) + 2 > sizeof(req->message)) {
+                // Handle the case where the message buffer is too small
+                // You might want to reallocate or handle the error
+                fprintf(stderr, "Error: req->message buffer is too small\n");
+                return req;
+            }
+            strcat(req->message, cur->path);
+            strcat(req->message, ";");
+            cur = cur->next;
+        }
+    }
+    size_t len = strlen(req->message);
+    if (len > 0 && req->message[len - 1] == ';') {
+        req->message[len - 1] = '\0';
+    }
+    return req;
+}

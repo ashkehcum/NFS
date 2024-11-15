@@ -1,7 +1,7 @@
 #include "functions.h"
 
 void delete_file_or_directory(st_request* req) {
-    char full_path[MAX_PATH_LEN];
+    char full_path[2*MAX_PATH_LEN];
     memset(full_path, 0, sizeof(full_path));
 
     // Construct the full path
