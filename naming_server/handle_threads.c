@@ -4,6 +4,7 @@ ss storage_server_list[100];
 extern node* hashtable;
 int socket_arr[MAX_CONNECTIONS][2];
 int storage_server_count = 0;
+int active_storage_servers = 0;
 
 void* handle_client_process(void *arg) {
     // handle the client request
@@ -125,6 +126,7 @@ void* storage_server_handler(void* args)
             socket_arr[index][0] = -1;
             storage_server_list[index]->storage_server_socket = -1;
             storage_server_list[index]->is_active = false;
+            active_storage_servers--;
             close(storage_socket);
             break;
         }
@@ -139,9 +141,9 @@ int check_if_exists(char *ip, int port, int socket, int index)
             socket_arr[index][0] = -1;
             storage_server_list[i]->is_active = true;
             storage_server_list[i]->storage_server_socket = socket;
-            socket_arr[index][1] = STORAGE_FLAG;
-            socket_arr[index][0] = socket;
-            return 1;
+            socket_arr[i][1] = STORAGE_FLAG;
+            socket_arr[i][0] = socket;
+            return i;
         }
     }
     return 0;
@@ -229,35 +231,50 @@ void *work_handler(){
                     // }
                     // print the contents of s
                     int c = check_if_exists(s->IP_Addr, s->NS_Port_No, socket_arr[i][0], i);
-                    printf("Storage server IP: %s\n", s->IP_Addr);
-                    printf("Storage server Port to NS: %d\n", s->NS_Port_No);
-                    printf("Storage server Port to Client: %d\n", s->Client_Port_No);
-                    printf("Storage server Paths:\n");
-
-                    char *token = strtok(s->paths, ";");
-                    while (token != NULL) {
-                        printf("%s\n", token);
-                        printf("Hash: %lu\n", create_hash(token));
-                        Insert(token, storage_server_count);
-                        printf("%d\n", Get(token));
-                        token = strtok(NULL, ";");
-                    }
-                    
-                    storage_server_list[storage_server_count] = (ss)malloc(sizeof(storage_server));
-                    storage_server_list[storage_server_count]->storage_server_socket = socket_arr[i][0];
-                    strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
-                    storage_server_list[storage_server_count]->Port_No = s->NS_Port_No;
-                    storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
-                    
-                    storage_server_count++;
-                    request req = (request)malloc(sizeof(st_request));
-                    req->request_type = STORAGE_SERVER_CONNECTION;
-                    logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED,0);
-                    free(req);
-                    // create a new thread to handle the requests sent to storage server
                     thread_args *args = (thread_args *)malloc(sizeof(thread_args));
-                    args->socket = socket_arr[i][0];
-                    args->index = i;
+                    if(c)
+                    {
+                        printf("Inactive Storage server activated\n");
+                        args->socket = socket_arr[c][0];
+                        args->index = c;
+                        request req = (request)malloc(sizeof(st_request));
+                        req->request_type = INACTIVE_STORAGE_SERVER_ACTIVATED;
+                        logMessage(STORAGE_FLAG, socket_arr[c][0], *req, STORAGE_SERVER_CONNECTED,0);
+                        free(req);
+                    }
+                    else
+                    {
+                        printf("Storage server IP: %s\n", s->IP_Addr);
+                        printf("Storage server Port to NS: %d\n", s->NS_Port_No);
+                        printf("Storage server Port to Client: %d\n", s->Client_Port_No);
+                        printf("Storage server Paths:\n");
+
+                        char *token = strtok(s->paths, ";");
+                        while (token != NULL) {
+                            printf("%s\n", token);
+                            printf("Hash: %lu\n", create_hash(token));
+                            Insert(token, storage_server_count);
+                            printf("%d\n", Get(token));
+                            token = strtok(NULL, ";");
+                        }
+                        
+                        storage_server_list[storage_server_count] = (ss)malloc(sizeof(storage_server));
+                        storage_server_list[storage_server_count]->storage_server_socket = socket_arr[i][0];
+                        strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
+                        storage_server_list[storage_server_count]->Port_No = s->NS_Port_No;
+                        storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
+                        
+                        storage_server_count++;
+                        request req = (request)malloc(sizeof(st_request));
+                        req->request_type = STORAGE_SERVER_CONNECTION;
+                        logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED,0);
+                        free(req);
+                        // create a new thread to handle the requests sent to storage server
+                        args->socket = socket_arr[i][0];
+                        args->index = i;
+                    }
+                    active_storage_servers++;
+                    free(s);
                     pthread_t storage_thread;
                     pthread_create(&storage_thread, NULL, &storage_server_handler, (void *)args);
                 }

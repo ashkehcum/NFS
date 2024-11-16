@@ -83,6 +83,7 @@
 #define PING 14
 #define ACK 15
 #define RECIEVE_DIR 16
+#define INACTIVE_STORAGE_SERVER_ACTIVATED 17
 
 // Structures
 
@@ -170,6 +171,8 @@ extern client client_list[MAX_CLIENTS];
 extern ss storage_server_list[100];
 extern int socket_arr[MAX_CONNECTIONS][2];
 extern int storage_server_count;
+extern int active_storage_servers;
+
 // Functions for handling requests
 void *work_handler();
 void handle_file_request(request req, int client_id);
