@@ -12,9 +12,11 @@ void* handle_client_process(void *arg) {
     request req = (request)malloc(sizeof(st_request));
     req->request_type = n->request_type;
     strcpy(req->data, n->data);
-    strcpy(req->path, n->path);
-    strcpy(req->copy_to_path, n->copy_to_path);
-    strcpy(req->file_or_dir_name, n->file_or_dir_name);
+    strcpy(req->src_path, n->src_path);
+    strcpy(req->dest_path, n->dest_path);
+    strcpy(req->src_file_dir_name, n->src_file_dir_name);
+    strcpy(req->ip_for_copy, n->ip_for_copy);
+    req->port_for_copy = n->port_for_copy;
     req->socket = n->socket;
     if(req->request_type == READ_FILE || req->request_type == WRITE_FILE || req->request_type == GET_FILE_INFO || req->request_type == STREAM_AUDIO) {
         handle_file_request(req, client_id);
@@ -69,9 +71,11 @@ void* client_handler(void *arg)
             n->client_id = client_socket;
             n->request_type = req->request_type;
             strcpy(n->data, req->data);
-            strcpy(n->path, req->path);
-            strcpy(n->copy_to_path, req->copy_to_path);
-            strcpy(n->file_or_dir_name, req->file_or_dir_name);
+            strcpy(n->src_path, req->src_path);
+            strcpy(n->dest_path, req->dest_path);
+            strcpy(n->src_file_dir_name, req->src_file_dir_name);
+            strcpy(n->ip_for_copy, req->ip_for_copy);
+            n->port_for_copy = req->port_for_copy;
             n->socket = client_socket;
 
             response res = get_from_cache(req);
@@ -95,9 +99,52 @@ void* client_handler(void *arg)
     }
 }
 
-void* storage_server_handler()
+void* storage_server_handler(void* args)
 {
-    
+    printf("Storage server connected\n");
+    thread_args *t_args = (thread_args *)args;
+    int storage_socket = t_args->socket;
+    int index = t_args->index;
+    while (1) {
+        response res = (response)malloc(sizeof(st_response));
+        int r = recv(storage_socket, res, sizeof(st_response), 0);
+        printf("%d\n", res->response_type);
+        if(r < 0){
+            free(res);
+            // perror("Error in receiving request from storage server");
+            printf("error recieving");
+            break;
+        } 
+        else if(r==0)
+        {
+            // handle the disconnection of the storage server
+            printf("Storage server disconnected\n");
+            // remove_paths_from_hash(index);
+            delete_from_cache_ssid(index);
+            free(res);
+            socket_arr[index][0] = -1;
+            storage_server_list[index]->storage_server_socket = -1;
+            storage_server_list[index]->is_active = false;
+            close(storage_socket);
+            break;
+        }
+    }
+}
+int check_if_exists(char *ip, int port, int socket, int index)
+{
+    for(int i = 0; i < storage_server_count; i++)
+    {
+        if(strcmp(storage_server_list[i]->IP_Addr, ip) == 0 && storage_server_list[i]->Port_No == port)
+        {
+            socket_arr[index][0] = -1;
+            storage_server_list[i]->is_active = true;
+            storage_server_list[i]->storage_server_socket = socket;
+            socket_arr[index][1] = STORAGE_FLAG;
+            socket_arr[index][0] = socket;
+            return 1;
+        }
+    }
+    return 0;
 }
 
 void *work_handler(){
@@ -181,6 +228,7 @@ void *work_handler(){
                     //     continue;
                     // }
                     // print the contents of s
+                    int c = check_if_exists(s->IP_Addr, s->NS_Port_No, socket_arr[i][0], i);
                     printf("Storage server IP: %s\n", s->IP_Addr);
                     printf("Storage server Port to NS: %d\n", s->NS_Port_No);
                     printf("Storage server Port to Client: %d\n", s->Client_Port_No);
@@ -196,7 +244,7 @@ void *work_handler(){
                     }
                     
                     storage_server_list[storage_server_count] = (ss)malloc(sizeof(storage_server));
-                    storage_server_list[storage_server_count]->storage_server_id = storage_server_count;
+                    storage_server_list[storage_server_count]->storage_server_socket = socket_arr[i][0];
                     strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
                     storage_server_list[storage_server_count]->Port_No = s->NS_Port_No;
                     storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
@@ -207,8 +255,11 @@ void *work_handler(){
                     logMessage(STORAGE_FLAG, socket_arr[i][0], *req, STORAGE_SERVER_CONNECTED,0);
                     free(req);
                     // create a new thread to handle the requests sent to storage server
+                    thread_args *args = (thread_args *)malloc(sizeof(thread_args));
+                    args->socket = socket_arr[i][0];
+                    args->index = i;
                     pthread_t storage_thread;
-                    pthread_create(&storage_thread, NULL, &storage_server_handler, (void *)&socket_arr[i][0]);
+                    pthread_create(&storage_thread, NULL, &storage_server_handler, (void *)args);
                 }
             }
         }

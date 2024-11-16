@@ -103,3 +103,31 @@ response Print_all_paths() {
     }
     return req;
 }
+
+void remove_paths_from_hash(int index)
+{
+    // delete all the nodes that have the s_index = index
+    for(int i=0;i<itablesize;i++)
+    {
+        node cur = hashtable[i];
+        node prev = NULL;
+
+        while (cur != NULL) {
+            if (cur->s_index == index) {
+                if (prev == NULL) {
+                    // Node to be deleted is the first node in the list
+                    hashtable[i] = cur->next;
+                } else {
+                    // Node to be deleted is not the first node
+                    prev->next = cur->next;
+                }
+                node temp = cur;
+                cur = cur->next;
+                free(temp); // Free the node
+            } else {
+                prev = cur;
+                cur = cur->next;
+            }
+        }
+    }
+}

@@ -4,11 +4,15 @@
 void copy_request(request dest, request src){
     dest->request_type = src->request_type;
     strcpy(dest->data, src->data);
-    strcpy(dest->path, src->path);
-    strcpy(dest->copy_to_path, src->copy_to_path);
-    strcpy(dest->file_or_dir_name, src->file_or_dir_name);
+    strcpy(dest->src_path, src->src_path);
+    strcpy(dest->src_file_dir_name, src->src_file_dir_name);
+    strcpy(dest->dest_path, src->dest_path);
+    strcpy(dest->ip_for_copy, src->ip_for_copy);
+    dest->port_for_copy = src->port_for_copy;
     dest->socket = src->socket;
+    // add all the attributes of the request structure here
 }
+
 void copy_response(response dest, response src){
     dest->response_type = src->response_type;
     strcpy(dest->message, src->message);
@@ -38,13 +42,14 @@ void move_to_front(int index){
     cache->cache_arr[0] = temp;
 }
 
-void add_to_cache(request key, response value){
+void add_to_cache(request key, response value,int ss_ind){
     if(is_cache_full()){
         remove_from_cache(cache->cache_arr[cache->curr_size-1].key);
     }
     cache_entry new_entry;
     new_entry.key = (request)malloc(sizeof(st_request));
     new_entry.value = (response)malloc(sizeof(st_response));
+    new_entry.ss_ind = ss_ind;
     copy_request(new_entry.key, key);
     copy_response(new_entry.value, value);
     for(int i = cache->curr_size; i > 0; i--){
@@ -68,6 +73,20 @@ void remove_from_cache(request key){
     // check if present and delete along with freeing memory
     for(int i = 0; i < cache->curr_size; i++){
         if(strcmp(cache->cache_arr[i].key->data, key->data) == 0){
+            free(cache->cache_arr[i].key);
+            free(cache->cache_arr[i].value);
+            for(int j = i; j < cache->curr_size-1; j++){
+                cache->cache_arr[j] = cache->cache_arr[j+1];
+            }
+            cache->curr_size--;
+            return;
+        }
+    }
+}
+
+void delete_from_cache_ssid(int ss_id){
+    for(int i = 0; i < cache->curr_size; i++){
+        if(cache->cache_arr[i].ss_ind == ss_id){
             free(cache->cache_arr[i].key);
             free(cache->cache_arr[i].value);
             for(int j = i; j < cache->curr_size-1; j++){

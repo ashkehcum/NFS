@@ -42,6 +42,7 @@
 #define MAX_RESPONSE_LEN 1000
 #define MAX_FILES 25
 #define MAX_PATHS 100
+#define IP_ADDR_LEN 16
 #define MAX_PATH_LEN 50
 
 // flags
@@ -78,17 +79,31 @@
 #define CREATE_DIR 10
 #define STORAGE_SERVER_CONNECTION 11
 #define LIST_PATHS 12
+#define RECIEVE_FILE 13
+#define PING 14
+#define ACK 15
+#define RECIEVE_DIR 16
 
 // Structures
+
+typedef struct {
+    int socket;
+    int index;
+} thread_args;
+
 typedef struct storage_server{
-    int storage_server_id;
+    int storage_server_socket;
     char IP_Addr[16];
     int Port_No;   // port of storage server through which communicates to the naming server
     int Client_Port; // port with which ss communicates to client and is given by NS
     
-    struct storage_server *b1;
-    struct storage_server *b2;
+    bool is_active;
+    bool is_backed_up;
 
+    int backup_storage_server1;  // index of the 1st storage server which is the backup for this storage server
+    int backupfoldernumber1;        // folder number 1,2 or 3 of the backup storage server 1 
+    int backup_storage_server2;    // index of the 2nd storage server which is the backup for this storage server
+    int backupfoldernumber2;    // folder number 1,2 or 3 of the backup storage server 2
 } storage_server;
 typedef storage_server* ss;
 
@@ -106,23 +121,28 @@ typedef struct client {
     int Port_No;
 } client;
 
-typedef struct st_request {
+typedef struct st_request{
     int request_type;
-    char data[MAX_RESPONSE_LEN];
-    char path[MAX_PATH_LEN];
-    char copy_to_path[MAX_PATH_LEN];
-    char file_or_dir_name[MAX_FILE_NAME];
+    char data[MAX_REQUEST_LEN];
+    char src_path[MAX_PATH_LEN];
+    char src_file_dir_name[MAX_FILE_NAME];
+    char dest_path[MAX_PATH_LEN];
+    char ip_for_copy[IP_ADDR_LEN];  // IP of the storage server to connect with for copy/paste
+    int port_for_copy;  // Port of the storage server to connect with for copy/paste
     int socket;
 } st_request;
+
 typedef st_request* request;
 
 typedef struct req_process {
     int client_id;
     int request_type;
-    char data[MAX_DATA_LENGTH];
-    char path[MAX_PATH_LEN];
-    char copy_to_path[MAX_PATH_LEN];
-    char file_or_dir_name[MAX_FILE_NAME];
+    char data[MAX_REQUEST_LEN];
+    char src_path[MAX_PATH_LEN];
+    char src_file_dir_name[MAX_FILE_NAME];
+    char dest_path[MAX_PATH_LEN];
+    char ip_for_copy[IP_ADDR_LEN];  // IP of the storage server to connect with for copy/paste
+    int port_for_copy;  // Port of the storage server to connect with for copy/paste
     int socket;
 }req_process;
 typedef req_process* proc;
@@ -154,7 +174,10 @@ extern int storage_server_count;
 void *work_handler();
 void handle_file_request(request req, int client_id);
 void file_requests_to_storage_server(request req, int client_id);
-
+void remove_paths_from_hash(int index);
+void backup_dir_1(int i);
+void backup_dir_2(int i);
+void* backup_handler();
 
 
 // Hashing
@@ -195,6 +218,7 @@ void logMessage(bool isClient, int client_socket, st_request request, int respon
 #define CACHE_SIZE 15
 #define MAX_CACHE_ENTRY_SIZE 100
 typedef struct cache_entry{
+    int ss_ind;
     request key;
     response value;
 } cache_entry;
@@ -209,9 +233,9 @@ my_cache* initialize_cache();
 bool is_cache_full();
 bool is_cache_empty();
 void move_to_front(int index);
-void add_to_cache(request key, response value);
+void add_to_cache(request key, response value, int ss_ind);
 response get_from_cache(request key);
 void remove_from_cache(request key);
-
+void delete_from_cache_ssid(int ss_id);
 
 #endif
