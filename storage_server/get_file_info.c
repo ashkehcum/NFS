@@ -21,19 +21,42 @@ void format_permissions(mode_t mode, char *perm_str) {
     perm_str[10] = '\0'; // Null-terminate the string
 }
 
-void get_file_info(st_request* req) {
+int get_file_info(st_request* req) {
     struct stat file_stat;
     char response[1024];  // Buffer to hold the response
     char perm_str[11];    // To store formatted permissions string
     memset(response, 0, sizeof(response));
     memset(perm_str, 0, sizeof(perm_str));
+    char full_path[2*MAX_PATH_LEN];
+    memset(full_path, 0, sizeof(full_path));
+    // strcpy(full_path, "main/");
+    // strcat(full_path, req->src_path);
+    // Construct the full path
+    if (strcmp(req->src_path, "/") == 0) {
+        // snprintf(full_path, sizeof(full_path), "main/%s", req->src_file_dir_name);
+        strcpy(full_path, "main/");
+        strcat(full_path, req->src_file_dir_name);
+    } else {
+        // snprintf(full_path, sizeof(full_path), "main/%s/%s", req->src_path, req->src_file_dir_name);
+        strcpy(full_path, "main/");
+        strcat(full_path, req->src_path);
+        strcat(full_path, "/");
+        strcat(full_path, req->src_file_dir_name);
+    }
 
     // Get file information using stat()
-    if (stat(req->path, &file_stat) < 0) {
+    if (stat(full_path, &file_stat) < 0) {
         perror("Failed to retrieve file information");
-        snprintf(response, sizeof(response), "Error: Unable to retrieve file information for %s\n", req->path);
-        send(req->socket, response, strlen(response), 0);
-        return;
+        st_response error;
+        error.response_type=GET_FILE_INFO_ERROR;
+        strcpy(error.message, "Error: Failed to retrieve file information\n");
+        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
+            perror("Failed to send error response to client");
+        }
+        else{
+            printf("Error response sent to client\n");
+        }
+        return -1;
     }
 
     // Retrieve file size
@@ -45,12 +68,21 @@ void get_file_info(st_request* req) {
     // Format file information into a response string
     snprintf(response, sizeof(response),
              "File: %s\nSize: %ld bytes\nPermissions: %s\n",
-             req->path, file_size, perm_str);
+             req->src_path, file_size, perm_str);
 
     // Send the file information to the client
     if (send(req->socket, response, strlen(response), 0) < 0) {
         perror("Failed to send file information to client");
-        return;
+        st_response error;
+        error.response_type=GET_FILE_INFO_ERROR;
+        strcpy(error.message, "Error: Failed to send file information to client\n");
+        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
+            perror("Failed to send error response to client");
+        }
+        else{
+            printf("Error response sent to client\n");
+        }
+        return -1;
     }
 
     printf("File information sent to client: %s\n", response);
@@ -62,6 +94,7 @@ void get_file_info(st_request* req) {
     } else {
         printf("ACK sent to client.\n");
     }
+    return 0;
 }
 
 

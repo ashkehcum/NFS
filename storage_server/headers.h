@@ -49,7 +49,7 @@
 #define MAX_PATHS 100
 #define MAX_PATH_LEN 50
 #define IP_ADDR_LEN 16
-#define CHUNK_SIZE 1024
+#define CHUNK_SIZE 1000
 
 // flags
 #define STORAGE_FLAG 0
@@ -65,21 +65,33 @@
 #define FILE_DELETE_ERROR 408
 #define FILE_CREATE_ERROR 409
 #define FILE_COPY_ERROR 410
+#define COPY_TO_PATH_INVALID 411
+#define PATH_NOT_FOUND 412
+#define GET_FILE_INFO_ERROR 414
 
 // Request types
 #define READ_FILE 1
 #define WRITE_FILE 2
 #define GET_FILE_INFO 3
 #define STREAM_AUDIO 4
-#define COPY_FILE 7
 #define DELETE_FILE 5
 #define CREATE_FILE 6
+#define COPY_FILE 7
 #define COPY_DIR 8
 #define DELETE_DIR 9
 #define CREATE_DIR 10
 #define STORAGE_SERVER_CONNECTION 11
-#define ACK_MSG 12
+#define LIST_PATHS 12
+#define RECEIVE_FILE 13
 #define FILE_FOUND 200
+#define PING 14
+#define ACK_MSG 15
+#define APPEND_FILE 16
+#define RECEIVE_DIRECTORY 17
+#define COPY_TO_SAME_FILE 18
+#define COPY_TO_SAME_DIR 19
+
+
 
 typedef struct storage_server{
     char IP_Addr[IP_ADDR_LEN];
@@ -110,9 +122,11 @@ typedef struct client{
 typedef struct request{
     int request_type;
     char data[MAX_REQUEST_LEN];
-    char path[MAX_PATH_LEN];
-    char file_or_dir_name[MAX_FILE_NAME];
-    char copy_to_path[MAX_PATH_LEN];
+    char src_path[MAX_PATH_LEN];
+    char src_file_dir_name[MAX_FILE_NAME];
+    char dest_path[MAX_PATH_LEN];
+    char ip_for_copy[IP_ADDR_LEN];  // IP of the storage server to copy the file to
+    int port_for_copy;  // Port of the storage server to copy the file to
     int socket;
 } st_request;
 

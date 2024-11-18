@@ -1,7 +1,7 @@
 #include "functions.h"
 
-// int get_ip_and_port(char* ip_addr, int* port) {
-//     int sock;
+// int get_ip_and_port(char* ip_addr, int* port){
+//         int sock;
 //     struct sockaddr_in server;
 //     char ip[INET_ADDRSTRLEN];
 
@@ -34,26 +34,40 @@
 //     }
 
 //     // Convert the IP to a readable string
-//     *port = ntohs(local_address.sin_port);
-
-    
+//     inet_ntop(AF_INET, &local_address.sin_addr, ip, sizeof(ip));
 //     // printf("Your IP address: %s\n", ip);  // Print the IP address
 //     strcpy(ip_addr, ip);
+
+//     *port=ntohs(local_address.sin_port);
+//     // printf("%d\n", port);
 
 //     // Close the socket
 //     close(sock);
 //     return 0;
 // }
 
-int get_ip_and_port(char* ip_addr, int* port){
-        int sock;
-    struct sockaddr_in server;
+
+int get_ip_and_port(char* ip_addr, int* port) {
+    int sock;
+    struct sockaddr_in local_address, server;
     char ip[INET_ADDRSTRLEN];
 
     // Create a socket for this function
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock == -1) {
         perror("Socket creation failed");
+        return -1;
+    }
+
+    // Bind the socket to a fixed port
+    memset(&local_address, 0, sizeof(local_address));
+    local_address.sin_family = AF_INET;
+    local_address.sin_addr.s_addr = INADDR_ANY; // Bind to all interfaces
+    // local_address.sin_port = htons(fixed_port); // Use the fixed port
+
+    if (bind(sock, (struct sockaddr *)&local_address, sizeof(local_address)) == -1) {
+        perror("Binding to fixed port failed");
+        close(sock);
         return -1;
     }
 
@@ -69,8 +83,7 @@ int get_ip_and_port(char* ip_addr, int* port){
         return -1;
     }
 
-    // Get the local IP address
-    struct sockaddr_in local_address;
+    // Get the local IP address and port
     socklen_t address_length = sizeof(local_address);
     if (getsockname(sock, (struct sockaddr *)&local_address, &address_length) == -1) {
         perror("getsockname failed");
@@ -80,11 +93,8 @@ int get_ip_and_port(char* ip_addr, int* port){
 
     // Convert the IP to a readable string
     inet_ntop(AF_INET, &local_address.sin_addr, ip, sizeof(ip));
-    // printf("Your IP address: %s\n", ip);  // Print the IP address
     strcpy(ip_addr, ip);
-
-    *port=ntohs(local_address.sin_port);
-    // printf("%d\n", port);
+    *port = ntohs(local_address.sin_port);
 
     // Close the socket
     close(sock);

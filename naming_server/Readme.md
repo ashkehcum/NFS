@@ -1,4 +1,5 @@
-## Assumptions
+# Assumptions
+
 - The backup server is running on the same machine as the naming server.
 - The backup is done by copying the files from the naming server to the backup server.
 - When the main storage server is down, only READ operations are allowed.
@@ -20,4 +21,3 @@ In the copy operation, the structure is as follows:
   - req->req_type stores the type of operation to be performed.
   - requests are sent to both the src and dest storage servers.
   - the request sent provides the src storage server with IP address and port number of the dest storage server and vice versa.
-

@@ -1,6 +1,6 @@
 #include "functions.h"
 
-int write_file(st_request* req) {
+int append_file(st_request* req) {
     int file_fd;
     ssize_t bytes_written;
     size_t data_len = strlen(req->data);
@@ -8,26 +8,15 @@ int write_file(st_request* req) {
     // Open the file for writing (create if not exists, truncate if exists)
     char full_path[2*MAX_PATH_LEN];
     memset(full_path, 0, sizeof(full_path));
-    // strcpy(full_path, "main/");
-    // strcat(full_path, req->src_path);
-    // Construct the full path
-    if (strcmp(req->src_path, "/") == 0) {
-        snprintf(full_path, sizeof(full_path), "main/%s", req->src_file_dir_name);
-    } else {
-        snprintf(full_path, sizeof(full_path), "main/%s/%s", req->src_path, req->src_file_dir_name);
-    }
-    
-    file_fd = open(full_path, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    strcpy(full_path, "/main/");
+    strcat(full_path, req->src_path);
+    file_fd = open(full_path, O_WRONLY | O_APPEND, 0644);
     if (file_fd < 0) {  
         perror("Failed to open file for writing");
-        st_response error;
-        error.response_type=FILE_WRITE_ERROR;
-        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
-            perror("Failed to send error response to client");
-        }
-        else{
-            printf("Error response sent to client\n");
-        }
+        char *error_msg = "Error: Unable to open the file for writing.\n";
+        st_response response;
+        strcpy(response.message,error_msg);
+        send(req->socket, &response, sizeof(st_response), 0);
         return -1;
     }
 
@@ -38,14 +27,6 @@ int write_file(st_request* req) {
     if (bytes_written < 0) {
         perror("Failed to write to file");
         close(file_fd);
-        st_response error;
-        error.response_type=FILE_WRITE_ERROR;
-        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
-            perror("Failed to send error response to client");
-        }
-        else{
-            printf("Error response sent to client\n");
-        }
         return -1;
     }
     // Ensure all the data has been written

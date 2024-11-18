@@ -1,21 +1,44 @@
 #include "functions.h"
 
-void read_file(st_request *req)
+int read_file(st_request *req)
 {   
-    printf("Reading file: %s\n", req->path);
+    printf("Reading file: %s\n", req->src_path);
     printf("Reading file data: %s\n", req->data);
     char buffer[CHUNK_SIZE];
     int file_fd;
     ssize_t bytes_read, bytes_sent;
 
     // Open the file for reading
-    file_fd = open(req->path, O_RDONLY);
+    char full_path[2*MAX_PATH_LEN];
+    memset(full_path, 0, sizeof(full_path));
+    // strcpy(full_path, "main/");
+    if(strcmp(req->data, "Backup | 1")==0){
+        strcpy(full_path, "b1/");
+    }
+    else if(strcmp(req->data, "Backup | 2")==0){
+        strcpy(full_path, "b2/");
+    }
+    else{
+        strcpy(full_path, "main/");
+    }
+    strcat(full_path, req->src_path);
+    printf("Full path: %s\n", full_path);
+    file_fd = open(full_path, O_RDONLY);
     if (file_fd < 0)
     {
         perror("Failed to open file");
-        const char *error_msg = "Error: Unable to open the requested file.\n";
-        send(req->socket, error_msg, strlen(error_msg), 0);
-        return;
+        // const char *error_msg = "Error: Unable to open the requested file.\n";
+        // send(req->socket, error_msg, strlen(error_msg), 0);
+        st_response error;
+        error.response_type=FILE_READ_ERROR;
+        strcpy(error.message, "Error: Unable to open the requested file.\n");
+        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
+            perror("Failed to send error response to client");
+        }
+        else{
+            printf("Error response sent to client\n");
+        }
+        return -1;
     }
     st_request read_request;
     // Read the file and send its content in chunks to the client
@@ -29,15 +52,33 @@ void read_file(st_request *req)
         {
             perror("Failed to send data to client");
             close(file_fd);
-            return;
+            st_response error;
+            error.response_type=FILE_READ_ERROR;
+            strcpy(error.message, "Error: Unable to send the requested file.\n");
+            if(send(req->socket, &error, sizeof(st_response), 0) < 0){
+                perror("Failed to send error response to client");
+            }
+            else{
+                printf("Error response sent to client\n");
+            }
+                return -1;
         }
     }
 
     if (bytes_read < 0)
     {
         perror("Failed to read from file");
-        const char *error_msg = "Error: Unable to read the requested file.\n";
-        send(req->socket, error_msg, strlen(error_msg), 0);
+        st_response error;
+        error.response_type=FILE_READ_ERROR;
+        strcpy(error.message, "Error: Unable to send the requested file.\n");
+        if(send(req->socket, &error, sizeof(st_response), 0) < 0){
+            perror("Failed to send error response to client");
+        }
+        else{
+            printf("Error response sent to client\n");
+        }
+        close(file_fd);
+        return -1;
     }
     else
     {
@@ -51,4 +92,5 @@ void read_file(st_request *req)
 
     // Close the file descriptor
     close(file_fd);
+    return 0;
 }

@@ -32,6 +32,7 @@
 // port defining
 #define NS_PORT 3000
 #define NS_IP "0.0.0.0"
+#define NAMING_SERVER_IP_ADDR "10.42.0.1"
 
 // max limits set
 #define MAX_CLIENTS 100
@@ -62,6 +63,9 @@
 #define FILE_READ_ERROR 407
 #define FILE_DELETE_ERROR 408
 #define FILE_CREATE_ERROR 409
+#define DELETE_DIR_ERROR 413
+#define COPY_DIR_ERROR 414
+#define CREATE_DIR_ERROR 415
 #define FILE_COPY_ERROR 410
 #define COPY_TO_PATH_INVALID 411
 #define PATH_NOT_FOUND 412
@@ -84,6 +88,8 @@
 #define ACK 15
 #define RECIEVE_DIR 16
 #define INACTIVE_STORAGE_SERVER_ACTIVATED 17
+#define COPY_TO_SAME_FILE 18
+#define COPY_TO_SAME_DIR 19
 
 // Structures
 
@@ -105,6 +111,8 @@ typedef struct storage_server{
     int backupfoldernumber1;        // folder number 1,2 or 3 of the backup storage server 1 
     int backup_storage_server2;    // index of the 2nd storage server which is the backup for this storage server
     int backupfoldernumber2;    // folder number 1,2 or 3 of the backup storage server 2
+
+    int ss_socket;
 } storage_server;
 typedef storage_server* ss;
 
@@ -113,6 +121,7 @@ typedef struct storage_server_info {
     int NS_Port_No;             // port with which ss is connected to naming server
     int Client_Port_No;         // port with which ss communicates to client
     char paths[MAX_PATHS*MAX_PATH_LEN];
+    int ss_socket;
 } storage_server_info;
 typedef storage_server_info* ss_info;
 
@@ -132,7 +141,6 @@ typedef struct st_request{
     int port_for_copy;  // Port of the storage server to connect with for copy/paste
     int socket;
 } st_request;
-
 typedef st_request* request;
 
 typedef struct req_process {
@@ -181,6 +189,7 @@ void remove_paths_from_hash(int index);
 void backup_dir_1(int i);
 void backup_dir_2(int i);
 void* backup_handler();
+void* storage_server_handler(void* args);
 
 
 // Hashing
@@ -233,6 +242,8 @@ typedef struct my_cache{
 extern my_cache* cache;
 
 my_cache* initialize_cache();
+void Free_cache();
+void clear_cache();
 bool is_cache_full();
 bool is_cache_empty();
 void move_to_front(int index);

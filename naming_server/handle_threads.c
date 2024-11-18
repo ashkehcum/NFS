@@ -22,7 +22,7 @@ void* handle_client_process(void *arg) {
     if(req->request_type == READ_FILE || req->request_type == WRITE_FILE || req->request_type == GET_FILE_INFO || req->request_type == STREAM_AUDIO) {
         handle_file_request(req, client_id);
     }
-    else if(req->request_type == CREATE_FILE || req->request_type == DELETE_FILE || req->request_type == COPY_FILE) {
+    else if(req->request_type == CREATE_FILE || req->request_type == DELETE_FILE || req->request_type == COPY_FILE || req->request_type == CREATE_DIR || req->request_type == DELETE_DIR || req->request_type == COPY_DIR || req->request_type == COPY_TO_SAME_FILE || req->request_type == COPY_TO_SAME_DIR) {
         file_requests_to_storage_server(req, client_id);
     }
     else if(req->request_type == LIST_PATHS)
@@ -30,7 +30,15 @@ void* handle_client_process(void *arg) {
         response r;
         printf("Printing all paths\n");
         r = Print_all_paths();
-        printf("%s\n", r->message);
+        // tokenise the r->message and send it to the client
+        // printf("%s\n", r->message);
+        char p1[10000];
+        strcpy(p1, r->message);
+        char *token = strtok(p1, ";");
+        while (token != NULL) {
+            printf("%s\n", token);
+            token = strtok(NULL, ";");
+        }
         send(client_id, r, sizeof(st_response), 0);
         logMessage(CLIENT_FLAG, client_id, *req, r->response_type,0);
     }
@@ -100,43 +108,12 @@ void* client_handler(void *arg)
     }
 }
 
-void* storage_server_handler(void* args)
-{
-    printf("Storage server connected\n");
-    thread_args *t_args = (thread_args *)args;
-    int storage_socket = t_args->socket;
-    int index = t_args->index;
-    while (1) {
-        response res = (response)malloc(sizeof(st_response));
-        int r = recv(storage_socket, res, sizeof(st_response), 0);
-        printf("%d\n", res->response_type);
-        if(r < 0){
-            free(res);
-            // perror("Error in receiving request from storage server");
-            printf("error recieving");
-            break;
-        } 
-        else if(r==0)
-        {
-            // handle the disconnection of the storage server
-            printf("Storage server disconnected\n");
-            // remove_paths_from_hash(index);
-            delete_from_cache_ssid(index);
-            free(res);
-            socket_arr[index][0] = -1;
-            storage_server_list[index]->storage_server_socket = -1;
-            storage_server_list[index]->is_active = false;
-            active_storage_servers--;
-            close(storage_socket);
-            break;
-        }
-    }
-}
-int check_if_exists(char *ip, int port, int socket, int index)
+
+int check_if_exists(char *ip, int clientport, int socket, int index)
 {
     for(int i = 0; i < storage_server_count; i++)
     {
-        if(strcmp(storage_server_list[i]->IP_Addr, ip) == 0 && storage_server_list[i]->Port_No == port)
+        if(strcmp(storage_server_list[i]->IP_Addr, ip) == 0 && storage_server_list[i]->Client_Port == clientport)
         {
             socket_arr[index][0] = -1;
             storage_server_list[i]->is_active = true;
@@ -146,7 +123,7 @@ int check_if_exists(char *ip, int port, int socket, int index)
             return i;
         }
     }
-    return 0;
+    return -1;
 }
 
 void *work_handler(){
@@ -230,20 +207,33 @@ void *work_handler(){
                     //     continue;
                     // }
                     // print the contents of s
-                    int c = check_if_exists(s->IP_Addr, s->NS_Port_No, socket_arr[i][0], i);
+                    int c = check_if_exists(s->IP_Addr, s->Client_Port_No, socket_arr[i][0], i);
                     thread_args *args = (thread_args *)malloc(sizeof(thread_args));
-                    if(c)
+                    if(c!=-1)
                     {
                         printf("Inactive Storage server activated\n");
                         args->socket = socket_arr[c][0];
                         args->index = c;
                         request req = (request)malloc(sizeof(st_request));
                         req->request_type = INACTIVE_STORAGE_SERVER_ACTIVATED;
+                        storage_server_list[c]->is_active = true;
+                        if(storage_server_list[c]->is_backed_up == false)
+                        {
+                            char *token = strtok(s->paths, ";");
+                            while (token != NULL) {
+                                printf("%s\n", token);
+                                // printf("Hash: %lu\n", create_hash(token));
+                                Insert(token, c);
+                                // printf("%d\n", Get(token));
+                                token = strtok(NULL, ";");
+                            }
+                        }
                         logMessage(STORAGE_FLAG, socket_arr[c][0], *req, STORAGE_SERVER_CONNECTED,0);
                         free(req);
                     }
                     else
                     {
+                        clear_cache();
                         printf("Storage server IP: %s\n", s->IP_Addr);
                         printf("Storage server Port to NS: %d\n", s->NS_Port_No);
                         printf("Storage server Port to Client: %d\n", s->Client_Port_No);
@@ -263,6 +253,8 @@ void *work_handler(){
                         strcpy(storage_server_list[storage_server_count]->IP_Addr, s->IP_Addr);
                         storage_server_list[storage_server_count]->Port_No = s->NS_Port_No;
                         storage_server_list[storage_server_count]->Client_Port = s->Client_Port_No;
+                        storage_server_list[storage_server_count]->is_active = true;
+                        storage_server_list[storage_server_count]->ss_socket = s->ss_socket;
                         
                         storage_server_count++;
                         request req = (request)malloc(sizeof(st_request));

@@ -56,6 +56,7 @@ void logMessage(bool isClient, int client_socket, st_request request, int respon
         }
     } else {
         perror("getpeername failed");
+        return;
     }
 
 
