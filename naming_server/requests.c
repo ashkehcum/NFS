@@ -141,7 +141,7 @@ void file_requests_to_storage_server(request req, int client_id)
         send(storage_server_list[storage_server_id]->storage_server_socket, r, sizeof(st_request), 0);
 
         // receive the response from the storage server and send it to the client
-        int r1 = recv(socket_arr[storage_server_id][0], res, sizeof(st_response), 0);
+        int r1 = recv(storage_server_list[storage_server_id]->storage_server_socket, res, sizeof(st_response), 0);
         if(res->response_type == ACK)
         {
             printf("File %s created successfully\n", req->src_file_dir_name);
@@ -268,7 +268,7 @@ void file_requests_to_storage_server(request req, int client_id)
         send(storage_server_list[storage_server_id]->storage_server_socket, r, sizeof(st_request), 0);
 
         // receive the response from the storage server and send it to the client
-        int r1 = recv(socket_arr[storage_server_id][0], res, sizeof(st_response), 0);
+        int r1 = recv(storage_server_list[storage_server_id]->storage_server_socket, res, sizeof(st_response), 0);
         printf("Response received %d\n", res->response_type);
         if(res->response_type == ACK)
         {
@@ -407,7 +407,7 @@ void file_requests_to_storage_server(request req, int client_id)
         send(storage_server_list[storage_server_id1]->storage_server_socket, r, sizeof(st_request), 0);
 
         // receive the response from the storage server and send it to the client
-        int r1 = recv(socket_arr[storage_server_id1][0], res, sizeof(st_response), 0);
+        int r1 = recv(storage_server_list[storage_server_id]->storage_server_socket, res, sizeof(st_response), 0);
         if(res->response_type == ACK)
         {
             printf("File %s deleted successfully\n", s1);
