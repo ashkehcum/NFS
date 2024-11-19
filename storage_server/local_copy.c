@@ -3,8 +3,8 @@
 int copy_local_file(st_request* req) {
     printf("Copying local file from: %s to: %s\n", req->src_path, req->dest_path);
     
-    char src_full_path[MAX_PATH_LEN];
-    char dest_full_path[MAX_PATH_LEN];
+    char src_full_path[MAX_COPY_LEN];
+    char dest_full_path[MAX_COPY_LEN];
     
     // Construct full paths
     snprintf(src_full_path, sizeof(src_full_path), "%s/%s", req->src_path, req->src_file_dir_name);
@@ -46,8 +46,8 @@ int copy_local_file(st_request* req) {
 }
 
 int copy_local_directory(st_request* req) {
-    char src_full_path[MAX_PATH_LEN];
-    char dest_full_path[MAX_PATH_LEN];
+    char src_full_path[MAX_COPY_LEN];
+    char dest_full_path[MAX_COPY_LEN];
     
     // Construct full paths
     snprintf(src_full_path, sizeof(src_full_path), "%s/%s", req->src_path, req->src_file_dir_name);
@@ -72,8 +72,8 @@ int copy_local_directory(st_request* req) {
             continue;
         }
         
-        char src_entry_path[MAX_PATH_LEN];
-        char dest_entry_path[MAX_PATH_LEN];
+        char src_entry_path[2*MAX_COPY_LEN];
+        char dest_entry_path[2*MAX_COPY_LEN];
         snprintf(src_entry_path, sizeof(src_entry_path), "%s/%s", src_full_path, entry->d_name);
         snprintf(dest_entry_path, sizeof(dest_entry_path), "%s/%s", dest_full_path, entry->d_name);
         

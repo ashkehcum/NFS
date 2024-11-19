@@ -1,4 +1,5 @@
 #include "functions.h"
+#include"headers.h"
 
 extern int thread_count;
 extern int nm_port; // Naming Server port number
@@ -147,7 +148,6 @@ void *naming_server_listener(void *arg)
     pthread_exit(NULL);
 }
 
-#define BUFFER_SIZE 1024
 void *client_listener(void *arg)
 {
     int threads_no = 0;
@@ -553,6 +553,19 @@ void *work_handler(void *arg)
             }
         }
         break;
+    case BACKUP_RECEIVE:
+        {
+            if(helper_receive_backup(&req,client_port,storage_server_socket)){
+
+            }
+        }
+        break;
+
+    case BACKUP_SEND:
+        {
+            helper_send_backup(&req);
+        }
+        break;
     default:
         break;
     }
@@ -579,12 +592,12 @@ void* ping_handler(void *arg){
     printf("nm_ip for ping: %s\n", nm_ip);
     if(inet_pton(AF_INET, nm_ip, &ping_addr.sin_addr) < 0){
         perror("Invalid destination IP address");
-        return -1;
+        return NULL;
     }
     if(connect(ping_sock, (struct sockaddr*)&ping_addr, sizeof(ping_addr)) < 0){
         perror("Failed to connect to Naming Server for ping\n");
         close(ping_sock);
-        return -1;
+        return NULL;
     }
 
     while(1){

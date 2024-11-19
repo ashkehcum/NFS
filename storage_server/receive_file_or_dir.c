@@ -84,7 +84,7 @@ int receive_directory(st_request* req, int client_sock) {
         bytes_received = recv(client_sock, &info, sizeof(info), 0);
         if (bytes_received <= 0) break;  // End of transmission
 
-        char entry_path[MAX_PATH_LEN];
+        char entry_path[MAX_COPY_LEN];
         snprintf(entry_path, sizeof(entry_path), "%s/%s", full_path, info.file_name);
         printf("entry path:%s\n", entry_path);
 

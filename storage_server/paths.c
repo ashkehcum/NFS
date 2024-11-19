@@ -4,8 +4,8 @@ void traverse_directory(const char *base_dir, const char *relative_dir, char **r
     DIR *dir;
     struct dirent *entry;
     struct stat statbuf;
-    char full_path[MAX_PATH_LEN];
-    char relative_path[MAX_PATH_LEN];
+    char full_path[MAX_COPY_LEN];
+    char relative_path[MAX_COPY_LEN];
 
     // Construct the full path to the current directory
     snprintf(full_path, sizeof(full_path), "%s/%s", base_dir, relative_dir);

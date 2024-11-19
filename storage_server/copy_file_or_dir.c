@@ -214,7 +214,7 @@ int copy_directory(st_request* req) {
             continue;
         }
 
-        char src_entry_path[MAX_PATH_LEN];
+        char src_entry_path[MAX_COPY_LEN];
         snprintf(src_entry_path, sizeof(src_entry_path), "%s/%s", req->src_path, entry->d_name);
 
         struct stat stat_buf;

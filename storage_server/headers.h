@@ -20,7 +20,12 @@
 #include <sys/wait.h>
 #include <stdbool.h>
 #include <netdb.h>
+#include <libgen.h>
 
+
+#define BUFFER_SIZE 4096
+#define MAX_COPY_LEN 4096
+#define BACKLOG 10
 
 // colors for printing
 #define GREEN_COLOR  "\033[0;32m"
@@ -45,7 +50,6 @@
 #define MAX_CONNECTIONS 120
 #define MAX_FILE_NAME 30
 #define MAX_REQUEST_LEN 1000
-#define BUFFER_SIZE 1024
 #define MAX_FILES 25
 #define MAX_PATHS 100
 #define MAX_PATH_LEN 50
@@ -91,6 +95,8 @@
 #define APPEND_FILE 17
 #define COPY_TO_SAME_FILE 18
 #define COPY_TO_SAME_DIR 19
+#define BACKUP_RECEIVE 21
+#define BACKUP_SEND 20
 
 
 
@@ -163,5 +169,8 @@ typedef struct file_info{
     time_t last_access_time;
     time_t last_modified_time;
 } file_info;
+
+int helper_receive_backup(st_request* req,int client_port, int server_sock);
+int helper_send_backup(st_request* req);
 
 #endif

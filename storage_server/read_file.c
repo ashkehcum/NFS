@@ -86,8 +86,8 @@ int read_file(st_request *req)
         const char *success_msg = "File sent successfully.\n";
         printf("File sent successfully.\n");
         st_request ack;
-        // ack.socket
         ack.request_type=ACK_MSG;
+        strcpy(ack.data,success_msg);   
         send(req->socket, &ack, sizeof(st_request), 0);
     }
 

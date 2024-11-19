@@ -91,11 +91,14 @@ int get_file_info(st_request* req) {
     printf("File information sent to client: %s\n", response);
 
     // Send acknowledgment to the client
-    // const char *ack_msg = "ACK";
-    // if (send(req->socket, ack_msg, strlen(ack_msg), 0) < 0) {
-    //     perror("Failed to send ACK to client");
-    // } else {
-    //     printf("ACK sent to client.\n");
-    // }
+    const char *ack_msg = "ACK";
+    st_request ack;
+    strcpy(ack.data,ack_msg);
+    ack.request_type=ACK_MSG;
+    if (send(req->socket, &ack, sizeof(st_request), 0) < 0) {
+        perror("Failed to send ACK to client");
+    } else {
+        printf("ACK sent to client.\n");
+    }
     return 0;
 }
